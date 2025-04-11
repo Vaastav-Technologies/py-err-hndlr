@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import Any, Protocol, override
 
+from vt.utils.errors.error_specs.__constants__ import *
+
 from vt.utils.errors.warnings import Warner, vt_warn
 
 
