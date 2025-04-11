@@ -148,12 +148,27 @@ class StrictWarningWithDefault[T](WarningWithDefault[T], DefaultNoError[T], Prot
     """
     Interface to denote that it is strictly decided that the supplied ``KeyError`` will not be reraised.
     """
-    pass
+    @override
+    @property
+    @abstractmethod
+    def warn_only(self) -> bool:
+        """
+        Only warn the user of the caught ``KeyError`` if ``True``, else ignore the ``KeyError`` silently.
+        """
+        ...
 
 
 class SimpleWarningWithDefault[T](WarningWithDefault[T]):
 
     def __init__(self, warn_only: bool = True):
+        """
+        Simple implementation for ``WarningWithDefault``.
+
+        Will reraise the caught ``KeyError`` if ``warn_only`` is ``False``.
+
+        :param warn_only: only warn the user of the caught ``KeyError`` when ``True. Reraise the caught ``KeyError``
+            if supplied ``False``.
+        """
         self._warn_only = warn_only
 
     @override
@@ -164,12 +179,22 @@ class SimpleWarningWithDefault[T](WarningWithDefault[T]):
     @override
     @property
     def raise_error(self) -> bool:
+        """
+        Caught ``KeyError`` will be reraised if ``warn_only`` is ``False``.
+
+        :return: inversion of ``warn_only``.
+        """
         return not self.warn_only
 
 
 class NoErrWarningWithDefault[T](StrictWarningWithDefault[T]):
 
     def __init__(self, warn_only: bool = True):
+        """
+        Caught ``KeyError`` will not be reraised.
+
+        :param warn_only: Only warn the user if supplied ``True``, else ignore the error silently.
+        """
         self._warn_only = warn_only
 
     @override
