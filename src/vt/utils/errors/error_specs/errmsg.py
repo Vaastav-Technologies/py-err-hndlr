@@ -46,6 +46,7 @@ class ErrorMessageFormer:
 
         :param items: List of argument names.
         :param conj_type: The type of conjunction to use ('and' or 'or').
+        :param surround_item: surround each item with the given string.
         :return: Formatted string of argument names joined by the conjunction.
         :raises KeyError: If the provided conjunction type is not in ``self.conjunctions``."""
         conjunction = self.conjunctions.get(conj_type, conj_type)
