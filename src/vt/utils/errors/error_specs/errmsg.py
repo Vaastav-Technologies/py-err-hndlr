@@ -41,7 +41,13 @@ class ErrorMessageFormer:
         self.conjunctions = conjunctions or {"and": "and", "or": "or"}
 
     def _join_args(self, items: list[str], conj_type: str, surround_item: str = "") -> str:
-        """Helper to join a list of arguments using the correct conjunction and comma rules."""
+        """
+        Helper to join a list of arguments using the correct conjunction and comma rules.
+
+        :param items: List of argument names.
+        :param conj_type: The type of conjunction to use ('and' or 'or').
+        :return: Formatted string of argument names joined by the conjunction.
+        :raises KeyError: If the provided conjunction type is not in ``self.conjunctions``."""
         conjunction = self.conjunctions.get(conj_type, conj_type)
         if surround_item:
             items = [f"{surround_item}{item}{surround_item}" for item in items]
@@ -71,6 +77,14 @@ class ErrorMessageFormer:
 
             >>> ErrorMsgFormer.not_allowed_together('a', 'b', 'c', prefix='Invalid: ')
             'Invalid: a, b and c are not allowed together.'
+
+        :param first_arg: The first argument name.
+        :param second_arg: The second argument name.
+        :param args: Additional argument names.
+        :param suffix: The string to append to the error message.
+        :param prefix: The string to prepend to the error message.
+        :return: Error message string.
+        :raises KeyError: If 'and' conjunction is missing from configuration.
         """
         all_args = [first_arg, second_arg, *args]
         return f"{prefix}{self._join_args(all_args, 'and')}{suffix}"
@@ -90,6 +104,14 @@ class ErrorMessageFormer:
 
             >>> ErrorMsgFormer.at_least_one_required('x', 'y', prefix='Missing: ')
             'Missing: Either x or y is required.'
+
+        :param first_arg: The first argument name.
+        :param second_arg: The second argument name.
+        :param args: Additional argument names.
+        :param suffix: The string to append to the message.
+        :param prefix: The string to prepend to the message.
+        :return: Error message string.
+        :raises KeyError: If 'or' conjunction is missing from configuration.
         """
         all_args = [first_arg, second_arg, *args]
         joined = self._join_args(all_args, "or")
@@ -112,12 +134,21 @@ class ErrorMessageFormer:
 
             >>> ErrorMsgFormer.all_required('foo', 'bar', prefix='Missing: ')
             'Missing: Both foo and bar are required.'
+
+        :param first_arg: The first argument name.
+        :param second_arg: The second argument name.
+        :param args: Additional argument names.
+        :param suffix: The string to append to the message.
+        :param prefix: The string to prepend to the message.
+        :return: Error message string.
+        :raises KeyError: If 'and' conjunction is missing from configuration.
         """
         all_args = [first_arg, second_arg, *args]
         keyword = "Both" if len(all_args) == 2 else "All"
         return f"{prefix}{keyword} {self._join_args(all_args, 'and')}{suffix}"
 
-    def errmsg_for_choices(self, emphasis: str | None = None, choices: list[Any] | None = None) -> str:
+    def errmsg_for_choices(self, value: str= "value", emphasis: str | None = None, choices: list[Any] | None = None,
+                           prefix: str = "Unexpected ", suffix: str = "") -> str:
         """
         Builds and returns an error message providing more context when a value is unexpectedly given.
 
@@ -126,18 +157,40 @@ class ErrorMessageFormer:
             >>> ErrorMsgFormer.errmsg_for_choices()
             'Unexpected value.'
 
-            >>> ErrorMsgFormer.errmsg_for_choices('verbosity')
+            >>> ErrorMsgFormer.errmsg_for_choices(emphasis='verbosity')
             'Unexpected verbosity value.'
 
             >>> ErrorMsgFormer.errmsg_for_choices(choices=['low', 'high'])
             "Unexpected value. Choose from 'low' and 'high'."
 
-            >>> ErrorMsgFormer.errmsg_for_choices('color', ['red', 'green', 'blue'])
+            >>> ErrorMsgFormer.errmsg_for_choices(emphasis='color', choices=['red', 'green', 'blue'])
             "Unexpected color value. Choose from 'red', 'green' and 'blue'."
+
+            >>> ErrorMsgFormer.errmsg_for_choices(emphasis='log level', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR',
+            ...     'FATAL'], prefix="Undefined ")
+            "Undefined log level value. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' and 'FATAL'."
+
+            >>> ErrorMsgFormer.errmsg_for_choices(value="'SUCCESS'", emphasis='log level', choices=['DEBUG', 'INFO',
+            ...     'WARNING', 'ERROR', 'FATAL'], prefix="Undefined ")
+            "Undefined log level 'SUCCESS'. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' and 'FATAL'."
+
+            >>> ErrorMsgFormer.errmsg_for_choices(value="'SUCCESS'", emphasis='log level', choices=['DEBUG', 'INFO',
+            ...     'WARNING', 'ERROR', 'FATAL'], prefix="Undefined ", suffix=" Defaulting to 'WARNING'")
+            "Undefined log level 'SUCCESS'. Choose from 'DEBUG', 'INFO', 'WARNING', 'ERROR' and 'FATAL'. Defaulting to 'WARNING'"
+
+        :param value: The value to show to illustrate the user that this maybe an invalid option.
+        :param emphasis: the string which is emphasised in the returned error message. The emphasising of string is not
+            done if this value is ``None`` or not provided.
+        :param choices: all the acceptable choices. Choices are not included in the error message if this value
+            is ``None`` or not supplied.
+        :param suffix: The string to append to the message.
+        :param prefix: The string to prepend to the message.
+        :return: The formed errmsg string.
         """
-        msg = f"Unexpected {emphasis + ' ' if emphasis else ''}value.".strip()
+        msg = f"{prefix}{emphasis + ' ' if emphasis else ''}{value}."
         if choices:
             msg += f" Choose from {self._join_args(choices, 'and', surround_item="'")}."
+        msg += suffix
         return msg
 
     def clone_with(self, **kwargs) -> "ErrorMessageFormer":
@@ -166,7 +219,7 @@ use `.clone_with(...)` to generate a new instance.
 
 Example::
 
-    >>> from vt.utils.errors.error_specs.utils import ErrorMsgFormer
+    >>> from vt.utils.errors.error_specs.errmsg import ErrorMsgFormer
     >>> ErrorMsgFormer.all_required('foo', 'bar')
     'Both foo and bar are required.'
 """
