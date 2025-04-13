@@ -10,6 +10,8 @@ from typing import Any
 
 class ErrorMessageFormer:
     """
+    Use ``ErrorMsgFormer`` global stateless object instead of directly instantiating this class.
+
     A configurable utility class for generating structured and reusable error messages for validation.
 
     This class supports locale-style customization such as Oxford comma usage, conjunction word changes
@@ -220,7 +222,7 @@ use `.clone_with(...)` to generate a new instance.
 
 Example::
 
-    >>> from vt.utils.errors.error_specs.errmsg import ErrorMsgFormer
+    >>> from vt.utils.errors.error_specs import ErrorMsgFormer
     >>> ErrorMsgFormer.all_required('foo', 'bar')
     'Both foo and bar are required.'
 """
