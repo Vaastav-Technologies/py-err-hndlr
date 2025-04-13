@@ -7,4 +7,4 @@ Inclusive library for error handling.
 
 from vt.utils.errors.error_specs.__constants__ import *
 from vt.utils.errors.error_specs.base import *
-from vt.utils.errors.error_specs.utils import form_errmsg_for_choices
+from vt.utils.errors.error_specs.utils import ErrorMsgFormer

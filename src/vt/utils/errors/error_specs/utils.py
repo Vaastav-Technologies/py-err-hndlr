@@ -5,240 +5,168 @@
 Utility methods for error specifications.
 """
 
-
-import warnings
 from typing import Any
-import inspect
-
-from vt.utils.errors.warnings import vt_warn
 
 
-def form_errmsg_for_choices(emphasis: str | None = None, choices: list[Any] | None = None) -> str:
+class ErrorMessageFormer:
     """
-    Create a sensible error message with more context when a value is provided unexpectedly.
+    A configurable utility class for generating structured and reusable error messages for validation.
 
-    Examples::
+    This class supports locale-style customization such as Oxford comma usage, conjunction word changes
+    (e.g., replacing "and"/"or" with localized alternatives), and suffix formatting. It is intended
+    to be subclassed or cloned via `clone_with()` for further customization.
 
-    >>> form_errmsg_for_choices()
-    'Unexpected value.'
+    Example::
 
-    >>> form_errmsg_for_choices('verbosity')
-    'Unexpected verbosity value.'
+        >>> ErrorMsgFormer.not_allowed_together('a', 'b')
+        'a and b are not allowed together.'
 
-    >>> form_errmsg_for_choices(choices=['v', 'vv', 'vvv'])
-    "Unexpected value. Choose from ['v', 'vv', 'vvv']."
-
-    >>> form_errmsg_for_choices('quietness', ['q', 'qq', 'qqq'])
-    "Unexpected quietness value. Choose from ['q', 'qq', 'qqq']."
-
-    :param emphasis: the string which is emphasised in the returned error message. The emphasising of string is not
-        done if this value is ``None`` or not provided.
-    :param choices: all the acceptable choices. Choices are not included in the error message if this value is ``None``
-        or not supplied.
-    :return: The formed errmsg string.
-    """
-    if emphasis:
-        errmsg = f"Unexpected {emphasis} value."
-    else:
-        errmsg = "Unexpected value."
-    if choices:
-        errmsg = f"{errmsg} Choose from {choices}."
-    return errmsg
-
-
-def not_allowed_together(*args: Any | None, __err: bool = True, __truthy: bool = False,
-                         __fmt: str = "{category}: {message}\n",
-                         **name_overrides: str | None):
-    """
-    Raise an error or warning if all provided positional arguments are not ``None`` or falsy.
-
-    This utility is designed to ensure that a group of arguments *cannot* be used together.
-    If all of them are provided (i.e., __truthy) or not ``None``, a ``ValueError`` or ``UserWarning`` is raised/emitted.
-
-    :param args: The arguments to check. Only truthy arguments are considered "provided" if ``__truthy`` is ``True``
-        else ``non-None`` areguments are considered "provided".
-    :param __truthy: Check for arguments being truthy instead of ``None``.
-    :param __err: If ``True``, raise a ``ValueError`` when all arguments are truthy (or not ``None``).
-        If ``False``, emits a ``UserWarning`` instead.
-    :param __fmt: format in which the warning will be raised. See ``vt_warn()`` for more details.
-        Only relevant if ``__err`` is ``False``.
-    :param name_overrides: Optional keyword arguments to rename argument labels in the error message.
-            Provide the argument as keyword with the original name and new string name as value. e.g.
-            ``not_allowed_together(a, b, b="no_b")`` will show "'a' and 'no_b'" in the message.
-
-    :raise UserWarning: If all provided arguments are truthy (or not ``None``) and ``__err`` is ``False``.
-    :raise ValueError: If all provided arguments are truthy (or not ``None``) and ``__err`` is ``True``.
-
-    Examples
-    --------
-    >>> import contextlib
-    >>> import sys
-    >>> a = 1
-    >>> b = 2
-    >>> not_allowed_together(a, b)
-    Traceback (most recent call last):
-    ...
-    ValueError: 'a' and 'b' are not allowed together
-
-    >>> with warnings.catch_warnings():
-    ...     with contextlib.redirect_stderr(sys.stdout):
-    ...         not_allowed_together(a, b, b="param_b", __err=False)
-    UserWarning: 'a' and 'param_b' are not allowed together
-
-    >>> not_allowed_together(None, b) # No error
-
-    >>> not_allowed_together(0, None) # No error
-
-    >>> a = "A"
-    >>> b = "B"
-    >>> c = "C"
-    >>> not_allowed_together(a, b, c)
-    Traceback (most recent call last):
-    ...
-    ValueError: 'a', 'b', and 'c' are not allowed together
-
-    >>> not_allowed_together(a, b, c, a="X", c="Z")
-    Traceback (most recent call last):
-    ...
-    ValueError: 'X', 'b', and 'Z' are not allowed together
-
-    >>> b = {}
-    >>> not_allowed_together(a, {}, c, __truthy=True) # no error as not all args are truthy ({}, 2nd arg)
-
-    >>> not_allowed_together(a, b, c) # err as b is not None and __truthy is defaulted to False.
-    Traceback (most recent call last):
-    ...
-    ValueError: 'a', 'b', and 'c' are not allowed together
+        >>> ErrorMsgFormer.clone_with(use_oxford_comma=True).all_required('a', 'b', 'c')
+        'All a, b, and c are required.'
     """
 
-    # Get argument names (best-effort using stack)
-    frame = inspect.currentframe().f_back
-    arg_names = [name for name, val in frame.f_locals.items() if val in args]
+    def __init__(
+            self,
+            locale: str = "en",
+            use_oxford_comma: bool = False,
+            conjunctions: dict[str, str] = None
+    ):
+        """
+        :param locale: The locale for the message structure (currently placeholder).
+        :param use_oxford_comma: Whether to use an Oxford comma before the final conjunction.
+        :param conjunctions: A mapping like {'and': 'and', 'or': 'or'} to customize conjunctions.
+        """
+        self.locale = locale
+        self.use_oxford_comma = use_oxford_comma
+        self.conjunctions = conjunctions or {"and": "and", "or": "or"}
 
-    # Use name overrides if provided
-    for i, name in enumerate(arg_names):
-        if name in name_overrides:
-            arg_names[i] = name_overrides[name]
-
-    valid = all(args) if __truthy else all(arg is not None for arg in args)
-    if valid:
-        # Format names nicely
-        if len(arg_names) > 2:
-            formatted = "', '".join(arg_names[:-1])
-            msg = f"'{formatted}', and '{arg_names[-1]}' are not allowed together"
+    def _join_args(self, items: list[str], conj_type: str, surround_item: str = "") -> str:
+        """Helper to join a list of arguments using the correct conjunction and comma rules."""
+        conjunction = self.conjunctions.get(conj_type, conj_type)
+        if surround_item:
+            items = [f"{surround_item}{item}{surround_item}" for item in items]
+        if len(items) == 2:
+            return f"{items[0]} {conjunction} {items[1]}"
+        elif len(items) > 2:
+            comma = "," if self.use_oxford_comma else ""
+            return f"{', '.join(items[:-1])}{comma} {conjunction} {items[-1]}"
         else:
-            msg = f"'{arg_names[0]}' and '{arg_names[1]}' are not allowed together"
+            return items[0]
 
-        if __err:
-            raise ValueError(msg)
-        else:
-            vt_warn(msg, fmt=__fmt, stack_level=3)
+    def not_allowed_together(self, first_arg: str, second_arg: str, *args: str,
+                             suffix: str = " are not allowed together.", prefix: str = "") -> str:
+        """
+        Builds and returns an error message for arguments that are not to be supplied together.
+
+        Examples::
+
+            >>> ErrorMsgFormer.not_allowed_together('a', 'b')
+            'a and b are not allowed together.'
+
+            >>> ErrorMsgFormer.not_allowed_together('a', 'b', 'c')
+            'a, b and c are not allowed together.'
+
+            >>> ErrorMsgFormer.not_allowed_together('a', 'b', suffix=' together nay.')
+            'a and b together nay.'
+
+            >>> ErrorMsgFormer.not_allowed_together('a', 'b', 'c', prefix='Invalid: ')
+            'Invalid: a, b and c are not allowed together.'
+        """
+        all_args = [first_arg, second_arg, *args]
+        return f"{prefix}{self._join_args(all_args, 'and')}{suffix}"
+
+    def at_least_one_required(self, first_arg: str, second_arg: str, *args: str,
+                              suffix: str = " is required.", prefix: str = "") -> str:
+        """
+        Builds and returns an error message indicating that at least one of the arguments is required.
+
+        Examples::
+
+            >>> ErrorMsgFormer.at_least_one_required('a', 'b')
+            'Either a or b is required.'
+
+            >>> ErrorMsgFormer.at_least_one_required('a', 'b', 'c')
+            'Either a, b or c is required.'
+
+            >>> ErrorMsgFormer.at_least_one_required('x', 'y', prefix='Missing: ')
+            'Missing: Either x or y is required.'
+        """
+        all_args = [first_arg, second_arg, *args]
+        joined = self._join_args(all_args, "or")
+        return f"{prefix}Either {joined}{suffix}"
+
+    def all_required(self, first_arg: str, second_arg: str, *args: str,
+                     suffix: str = " are required.", prefix: str = "") -> str:
+        """
+        Builds and returns an error message stating that all arguments must be supplied.
+
+        Uses 'Both' for two items, 'All' for three or more.
+
+        Examples::
+
+            >>> ErrorMsgFormer.all_required('a', 'b')
+            'Both a and b are required.'
+
+            >>> ErrorMsgFormer.all_required('a', 'b', 'c')
+            'All a, b and c are required.'
+
+            >>> ErrorMsgFormer.all_required('foo', 'bar', prefix='Missing: ')
+            'Missing: Both foo and bar are required.'
+        """
+        all_args = [first_arg, second_arg, *args]
+        keyword = "Both" if len(all_args) == 2 else "All"
+        return f"{prefix}{keyword} {self._join_args(all_args, 'and')}{suffix}"
+
+    def errmsg_for_choices(self, emphasis: str | None = None, choices: list[Any] | None = None) -> str:
+        """
+        Builds and returns an error message providing more context when a value is unexpectedly given.
+
+        Examples::
+
+            >>> ErrorMsgFormer.errmsg_for_choices()
+            'Unexpected value.'
+
+            >>> ErrorMsgFormer.errmsg_for_choices('verbosity')
+            'Unexpected verbosity value.'
+
+            >>> ErrorMsgFormer.errmsg_for_choices(choices=['low', 'high'])
+            "Unexpected value. Choose from 'low' and 'high'."
+
+            >>> ErrorMsgFormer.errmsg_for_choices('color', ['red', 'green', 'blue'])
+            "Unexpected color value. Choose from 'red', 'green' and 'blue'."
+        """
+        msg = f"Unexpected {emphasis + ' ' if emphasis else ''}value.".strip()
+        if choices:
+            msg += f" Choose from {self._join_args(choices, 'and', surround_item="'")}."
+        return msg
+
+    def clone_with(self, **kwargs) -> "ErrorMessageFormer":
+        """
+        Returns a new instance of ErrorMessageFormer with the given overrides.
+
+        Examples::
+
+            >>> custom = ErrorMsgFormer.clone_with(use_oxford_comma=False)
+            >>> custom.not_allowed_together('a', 'b', 'c')
+            'a, b and c are not allowed together.'
+        """
+        return ErrorMessageFormer(
+            locale=kwargs.get("locale", self.locale),
+            use_oxford_comma=kwargs.get("use_oxford_comma", self.use_oxford_comma),
+            conjunctions=kwargs.get("conjunctions", self.conjunctions.copy())
+        )
 
 
-def at_least_one_required(*args: Any | None, __err: bool = True, __truthy: bool = False,
-                          __fmt: str = "{category}: {message}\n",
-                          **name_overrides: str | None):
-    """
-    Raise an error or warning if none of the provided arguments are present.
+ErrorMsgFormer = ErrorMessageFormer()
+"""
+A singleton, configurable, stateless instance for reusable validation error messages.
 
-    This utility ensures that *at least one* of the provided arguments is given.
-    Arguments are considered "provided" based on the ``__truthy`` flag:
-    if ``__truthy=True``, then values like ``0``, ``''``, ``[]`` are considered missing;
-    if ``__truthy=False``, only ``None`` is considered missing.
+Import and use `ErrorMsgFormer` across your app. If you need a custom version,
+use `.clone_with(...)` to generate a new instance.
 
-    :param args: The arguments to validate.
-    :param __truthy: If ``True``, treats only truthy values as present.
-                     If ``False``, any value except ``None`` is treated as present.
-    :param __err: If ``True``, raises a ``ValueError`` if no arguments are provided.
-                  If ``False``, emits a ``UserWarning`` instead.
-    :param __fmt: Message format used in case of warning. Has no effect when ``__err=True``.
-    :param name_overrides: Optional mapping of original variable names to custom display names
-                           for the error/warning message.
+Example::
 
-    :raises ValueError: When no arguments are present and ``__err=True``.
-    :raises UserWarning: When no arguments are present and ``__err=False``.
-
-    Examples
-    --------
-    >>> a = None
-    >>> b = None
-    >>> at_least_one_required(a, b)
-    Traceback (most recent call last):
-    ...
-    ValueError: At least one of 'a' or 'b' is required
-
-    >>> a = None
-    >>> b = 42
-    >>> at_least_one_required(a, b)  # Valid: b is not None
-
-    >>> a = 0
-    >>> b = ""
-    >>> at_least_one_required(a, b, __truthy=False)  # Valid: both are not None
-
-    >>> at_least_one_required(a, b, __truthy=True)  # Error: both falsy
-    Traceback (most recent call last):
-    ...
-    ValueError: At least one of 'a' or 'b' is required
-
-    >>> a = "value"
-    >>> b = ""
-    >>> at_least_one_required(a, b, __truthy=True)  # Valid: a is truthy
-
-    >>> import contextlib, sys
-    >>> a = None
-    >>> b = None
-    >>> with warnings.catch_warnings():
-    ...     with contextlib.redirect_stderr(sys.stdout):
-    ...         at_least_one_required(a, b, __err=False)
-    UserWarning: At least one of 'a' or 'b' is required
-
-    >>> a = None
-    >>> b = None
-    >>> at_least_one_required(a, b, __err=True, a="first", b="second")
-    Traceback (most recent call last):
-    ...
-    ValueError: At least one of 'first' or 'second' is required
-
-    >>> a = 1
-    >>> at_least_one_required(a)  # Only one argument, valid
-
-    >>> at_least_one_required(None)  # Only one, None -> error
-    Traceback (most recent call last):
-    ...
-    ValueError: 'a' is required
-
-    >>> at_least_one_required(0, __truthy=False)  # Valid: not None
-
-    >>> at_least_one_required(0, __truthy=True)  # Invalid: 0 is falsy
-    Traceback (most recent call last):
-    ...
-    ValueError: 'a' is required
-    """
-    # Best-effort name detection
-    frame = inspect.currentframe().f_back
-    arg_names = [name for name, val in frame.f_locals.items() if val in args]
-
-    # Apply overrides
-    for i, name in enumerate(arg_names):
-        if name in name_overrides:
-            arg_names[i] = name_overrides[name]
-
-    # Determine presence
-    valid = any(args) if __truthy else any(arg is not None for arg in args)
-
-    if not valid:
-        # Message formatting
-        if len(arg_names) > 2:
-            formatted = "', '".join(arg_names[:-1])
-            msg = f"At least one of '{formatted}', or '{arg_names[-1]}' is required"
-        elif len(arg_names) == 2:
-            msg = f"At least one of '{arg_names[0]}' or '{arg_names[1]}' is required"
-        elif len(arg_names) == 1:
-            msg = f"'{arg_names[0]}' is required"
-        else:
-            msg = "At least one required argument must be provided"
-
-        if __err:
-            raise ValueError(msg)
-        else:
-            vt_warn(msg, fmt=__fmt, stack_level=3)
+    >>> from vt.utils.errors.error_specs.utils import ErrorMsgFormer
+    >>> ErrorMsgFormer.all_required('foo', 'bar')
+    'Both foo and bar are required.'
+"""
