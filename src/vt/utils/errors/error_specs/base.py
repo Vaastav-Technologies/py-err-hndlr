@@ -142,7 +142,7 @@ class SimpleWarningWithDefault[T](WarningWithDefault[T]):
 
         Will reraise the caught ``KeyError`` if ``warn_only`` is ``False``.
 
-        :param warn_only: only warn the user of the caught ``KeyError`` when ``True. Reraise the caught ``KeyError``
+        :param warn_only: only warn the user of the caught ``KeyError`` when ``True``. Reraise the caught ``KeyError``
             if supplied ``False``.
         """
         self._warn_only = warn_only
