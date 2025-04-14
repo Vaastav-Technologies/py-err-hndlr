@@ -36,7 +36,7 @@ class DefaultOrError[T](Protocol):
         :raise KeyError: a better context ``KeyError`` if it is decided to re raise the error by returning ``True``
             from ``self.raise_error``.
         """
-        errmsg = ErrorMsgFormer.errmsg_for_choices(emphasis, choices)
+        errmsg = ErrorMsgFormer.errmsg_for_choices(emphasis=emphasis, choices=choices)
         if self.raise_error:
             raise KeyError(f"{key_error}: {errmsg}")
         return default_level
@@ -111,7 +111,7 @@ class WarningWithDefault[T](DefaultOrError[T], Warner, Protocol):
         :raise KeyError: a better context ``KeyError`` if it is decided to re raise the error by returning ``True``
             from ``self.raise_error`` and ``self.warn_only`` is ``False``.
         """
-        errmsg = ErrorMsgFormer.errmsg_for_choices(emphasis, choices)
+        errmsg = ErrorMsgFormer.errmsg_for_choices(emphasis=emphasis, choices=choices)
         if self.warn_only:
             vt_warn(f"{key_error}: {errmsg}", stack_level=3)
         else:
