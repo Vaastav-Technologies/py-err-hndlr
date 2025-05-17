@@ -31,7 +31,7 @@ class ErrorMessageFormer:
             self,
             locale: str = "en",
             use_oxford_comma: bool = False,
-            conjunctions: dict[str, str] = None
+            conjunctions: dict[str, str] | None = None
     ):
         """
         :param locale: The locale for the message structure (currently placeholder).
