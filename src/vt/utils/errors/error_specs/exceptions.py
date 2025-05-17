@@ -228,6 +228,9 @@ class VTCmdException(VTException):
 
 
 if __name__ == '__main__':
+    """
+    Some test code for exception formatting check.
+    """
     import logging
     import sys
 
