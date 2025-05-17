@@ -18,43 +18,87 @@ class VTException(Exception):
         """
         Examples:
 
-          * standalone exceptions raising:
+          * standalone exception raising:
 
-            >>> raise VTException()
+            * plain class:
+
+            >>> raise VTException # doctest: +IGNORE_EXCEPTION_DETAIL
             Traceback (most recent call last):
-            VTException
+            error_specs.exceptions.VTException
 
-          * standalone exceptions raising with message:
+            * instance without message:
+
+            >>> raise VTException() # doctest: +IGNORE_EXCEPTION_DETAIL
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException
+
+            * instance with message:
 
             >>> raise VTException('Expected.')
             Traceback (most recent call last):
-            VTException: Expected.
+            error_specs.exceptions.VTException: Expected.
 
           * chain known exceptions from known code:
 
-            >>> raise VTException('A relevant exception') from ValueError
+            * plain class:
+
+            >>> raise VTException from ValueError
             Traceback (most recent call last):
-            VTException: ValueError: A relevant exception
+            error_specs.exceptions.VTException: ValueError
 
-          * chain known exceptions from known code:
-
-            >>> raise VTException('A relevant exception') from ValueError()
+            >>> raise VTException from ValueError()
             Traceback (most recent call last):
-            VTException: ValueError: A relevant exception
+            error_specs.exceptions.VTException: ValueError
 
-          * chain known exceptions with their own message.
-
-            >>> raise VTException('A relevant exception') from ValueError('Unexpected value.')
+            >>> raise VTException from ValueError('cause message.')
             Traceback (most recent call last):
-            VTException: ValueError: A relevant exception
+            error_specs.exceptions.VTException: ValueError: cause message.
 
-          * chained exceptions are retained in ``cause`` property for further inspection and stact-trace.
+            * plain cause class:
+
+            >>> raise VTException() from ValueError
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError
+
+            >>> raise VTException('main message') from ValueError
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError: main message
+
+            * blank instance with cause class instance:
+
+            >>> raise VTException() from ValueError()
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError
+
+            * with message in cause:
+
+            >>> raise VTException() from ValueError('cause message.')
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError: cause message.
+
+            * with message in instance:
+
+            >>> raise VTException('main message.') from ValueError
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError: main message.
+
+            >>> raise VTException('main message.') from ValueError()
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError: main message.
+
+          * chain known exceptions with their own message. The main instance message gets preference.
+
+            >>> raise VTException('main message.') from ValueError('cause message.')
+            Traceback (most recent call last):
+            error_specs.exceptions.VTException: ValueError: main message.
+
+          * chained exceptions are retained in ``cause`` property for further inspection and stack-trace.
 
             >>> try:
-            ...     raise VTException('Some exception message') from ValueError('Unexpected value.')
+            ...     raise VTException('main message.') from ValueError('cause message.')
             ... except VTException as v:
             ...     v.cause
-            ValueError('Unexpected value.')
+            ValueError('cause message.')
 
         :param args: arguments for ``Exception``.
         :param kwargs: extra keyword-args for more info storage.
@@ -67,7 +111,27 @@ class VTException(Exception):
         return self.__cause__
 
     def __str__(self):
-        return f"{self.cause.__class__.__name__}: {super().__str__()}" if self.cause else super().__str__()
+        if not self.args and self.cause:
+            if not self.cause.args:
+                return f"{self.cause.__class__.__name__}"
+            else:
+                return f"{self.cause.__class__.__name__}: {self.cause.__str__()}"
+        if self.args and not self.cause:
+            return super().__str__()
+        if self.args and self.cause:
+            return f"{self.cause.__class__.__name__}: {super().__str__()}"
+        return ''
+
+    def to_dict(self):
+        """
+        :return: a structured dict version of the exception for structured logging.
+        """
+        return {
+            "type": self.__class__.__name__,
+            "message": str(self),
+            "cause_type": type(self.cause).__name__ if self.cause else None,
+            "cause_message": str(self.cause) if self.cause else None
+        }
 
 
 class VTCmdException(VTException):
@@ -83,61 +147,61 @@ class VTCmdException(VTException):
 
             >>> raise VTCmdException()
             Traceback (most recent call last):
-            VTCmdException
+            error_specs.exceptions.VTCmdException
 
           * standalone exceptions raising with error code:
 
             >>> raise VTCmdException(exit_code=30)
             Traceback (most recent call last):
-            VTCmdException
+            error_specs.exceptions.VTCmdException
 
           * standalone exceptions raising with message:
 
             >>> raise VTCmdException('Expected.')
             Traceback (most recent call last):
-            VTException: Expected.
+            error_specs.exceptions.VTCmdException: Expected.
 
           * standalone exceptions raising with message and error code:
 
             >>> raise VTCmdException('Expected.', exit_code=20)
             Traceback (most recent call last):
-            VTCmdException: Expected.
+            error_specs.exceptions.VTCmdException: Expected.
 
           * chain known exceptions from known code:
 
             >>> raise VTCmdException('A relevant exception') from ValueError
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chain known exceptions from known code with error code:
 
             >>> raise VTCmdException('A relevant exception', exit_code=9) from ValueError
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chain known exceptions from known code:
 
             >>> raise VTCmdException('A relevant exception') from ValueError()
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chain known exceptions from known code with error code:
 
             >>> raise VTCmdException('A relevant exception', exit_code=40) from ValueError()
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chain known exceptions with their own message.
 
             >>> raise VTCmdException('A relevant exception') from ValueError('Unexpected value.')
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chain known exceptions with their own message with error code.
 
             >>> raise VTCmdException('A relevant exception', exit_code=90) from ValueError('Unexpected value.')
             Traceback (most recent call last):
-            VTCmdException: ValueError: A relevant exception
+            error_specs.exceptions.VTCmdException: ValueError: A relevant exception
 
           * chained exceptions are retained in ``cause`` property for further inspection and stact-trace.
 
@@ -161,3 +225,43 @@ class VTCmdException(VTException):
         """
         super().__init__(*args, exit_code=exit_code, **kwargs)
         self.exit_code = exit_code
+
+
+if __name__ == '__main__':
+    import logging
+    import sys
+
+    def log_sep(file=sys.stderr):
+        print('='*50, file=file)
+        print('|'*50, file=file)
+        print('='*50, file=file)
+
+    l = logging.getLogger()
+    try:
+        raise VTException from ValueError('a message.')
+    except VTException as e:
+        l.exception('exception')
+        print('-'*50, file=sys.stderr)
+        l.error(e)
+    log_sep()
+
+    try:
+        raise VTException('a message.') from ValueError
+    except VTException as e:
+        l.exception('exception')
+        print('-'*50, file=sys.stderr)
+        l.error(e)
+    log_sep()
+
+    try:
+        try:
+            raise VTException('a message.') from ValueError('unexpected.')
+        except VTException as e:
+            l.exception('exception')
+            print('-'*50, file=sys.stderr)
+            l.error(e)
+            raise VTException('Yo man') from e
+    except VTException as e:
+        l.exception('reraised.')
+        print('-'*50, file=sys.stderr)
+        l.error(e)
