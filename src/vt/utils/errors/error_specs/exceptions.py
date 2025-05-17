@@ -108,6 +108,9 @@ class VTException(Exception):
 
     @property
     def cause(self) -> BaseException | None:
+        """
+        :return: the ``__cause__`` of this exception, obtained when exception is raised using a ``from`` clause.
+        """
         return self.__cause__
 
     def __str__(self):
