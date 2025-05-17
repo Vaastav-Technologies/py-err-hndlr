@@ -22,13 +22,13 @@ class VTException(Exception):
 
             * plain class:
 
-            >>> raise VTException # doctest: +IGNORE_EXCEPTION_DETAIL
+            >>> raise VTException
             Traceback (most recent call last):
             error_specs.exceptions.VTException
 
             * instance without message:
 
-            >>> raise VTException() # doctest: +IGNORE_EXCEPTION_DETAIL
+            >>> raise VTException()
             Traceback (most recent call last):
             error_specs.exceptions.VTException
 
