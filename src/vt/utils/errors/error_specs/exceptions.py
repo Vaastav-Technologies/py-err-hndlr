@@ -113,7 +113,7 @@ class VTException(Exception):
         """
         return self.__cause__
 
-    def __str__(self):
+    def __str__(self) -> str:
         if not self.args and self.cause:
             if not self.cause.args:
                 return f"{self.cause.__class__.__name__}"
@@ -125,7 +125,7 @@ class VTException(Exception):
             return f"{self.cause.__class__.__name__}: {super().__str__()}"
         return ''
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, str | None]:
         """
         :return: a structured dict version of the exception for structured logging.
         """
