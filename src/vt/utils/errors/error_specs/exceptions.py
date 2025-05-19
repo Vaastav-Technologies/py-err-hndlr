@@ -4,7 +4,27 @@
 """
 Exceptions and exception hierarchies native to `Vaastav Technologies (OPC) Private Limited` python code.
 """
+from abc import abstractmethod
+from subprocess import CalledProcessError
+from typing import Protocol, override
+from vt.utils.commons.commons.core_py import fallback_on_none_strict
 from vt.utils.errors.error_specs import ERR_GENERIC_ERR
+
+
+class HasExitCode(Protocol):
+    """
+    Interface denoting that it stores an ``exit_code`` which can be used by applications during time of exit to denote
+    an exit, error or ok condition using this error code.
+    """
+
+    @property
+    @abstractmethod
+    def exit_code(self) -> int:
+        """
+        :return: an exit code which can be used by applications during time of exit to denote
+            an exit, error or ok condition using this error code.
+        """
+        ...
 
 
 class VTException(Exception):
