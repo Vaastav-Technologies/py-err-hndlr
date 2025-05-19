@@ -36,6 +36,9 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
 ]
+dependencies = [
+  "vt-commons @ git+https://github.com/Vaastav-Technologies/py-commons.git"
+]
 
 # List additional groups of dependencies here (e.g. development
 # dependencies). Users will be able to install these using the "extras"
