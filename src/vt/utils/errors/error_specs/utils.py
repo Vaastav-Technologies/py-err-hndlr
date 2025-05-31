@@ -319,7 +319,7 @@ def require_iterable[T](
         raise exc from cause
 
     if isinstance(val_to_check, str) or not isinstance(val_to_check, Iterable):
-        raise_error(f"{prefix}'{var_name}' must be an iterable (not a string){suffix}")
+        raise_error(f"{prefix}'{var_name}' must be an non-str iterable {suffix}")
 
     iterable_type_str = 'iterable'
     if enforce is not None:
