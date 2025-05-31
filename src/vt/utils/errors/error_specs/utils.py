@@ -5,7 +5,6 @@
 Utility functions for error handling.
 """
 
-import inspect
 import types
 from collections import deque
 from collections.abc import Iterable
@@ -27,7 +26,7 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        raise_from_caller: bool = True
+        lenient: bool = False
 ) -> TypeGuard[bool]: ...
 
 @overload
@@ -40,7 +39,7 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        raise_from_caller: bool = True
+        lenient: bool = False
 ) -> TypeGuard[int]: ...
 
 @overload
@@ -53,7 +52,7 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        raise_from_caller: bool = True
+        lenient: bool = False
 ) -> TypeGuard[float]: ...
 
 @overload
@@ -66,7 +65,7 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        raise_from_caller: bool = True
+        lenient: bool = False
 ) -> TypeGuard[str]: ...
 
 def require_type[T](
@@ -78,12 +77,11 @@ def require_type[T](
         *,
         prefix: str = '',
         suffix: str = '',
-        raise_from_caller: bool = True
+        lenient: bool = False
 ) -> TypeGuard[T]:
     """
     Validates that the provided value matches the specified type. If it does not,
-    raises a configurable exception, optionally spoofing the traceback to appear from
-    the caller site.
+    raises a configurable exception.
 
     :param val_to_check: The value to validate.
     :type val_to_check: T
@@ -99,51 +97,53 @@ def require_type[T](
     :type prefix: str
     :param suffix: Optional suffix for error messages.
     :type suffix: str
-    :param raise_from_caller: Whether to fake traceback so the exception appears raised from the caller.
-    :type raise_from_caller: bool
+    :param lenient: If True, uses `isinstance()` for validation (subclasses allowed, e.g. ``bool`` is an ``int`` if
+        this options is ``True``). If False, uses strict `type(...) is ...`, i.e., ``bool`` is no longer considered an
+        ``int``.
+    :type lenient: bool
 
     :raises exception_to_raise: If the value is not an instance of ``val_type``.
 
     :return: None
 
-    :example:
+    Examples:
 
-    >>> _ = require_type(123, "count", int)
-    >>> _ = require_type("abc", "name", str)
+    >>> require_type(123, "count", int)
+    True
 
-    >>> _ = require_type(123, "flag", bool)
+    >>> require_type("abc", "name", str)
+    True
+
+    >>> require_type(True, "count", int)
     Traceback (most recent call last):
-        ...
+    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'count' must be of type int
+
+    Lenient checks pass ``True`` or ``bool`` as a type of ``int``:
+
+    >>> require_type(True, "count", int, lenient=True)
+    True
+
+    >>> require_type(123, "flag", bool)
+    Traceback (most recent call last):
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'flag' must be of type bool
 
-    >>> _ = require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
+    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
     Traceback (most recent call last):
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: ConfigError: 'count' must be of type int Refer to docs.
 
     >>> class MyTypedException(VTExitingException): pass
 
-    >>> _ = require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected boo, provided None
+    >>> require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected bool, provided None
     Traceback (most recent call last):
     error_specs.utils.MyTypedException: TypeError: 'is_ready' must be of type bool
     """
-    if not isinstance(val_to_check, val_type):
+    actual_type = type(val_to_check)
+    if (not lenient and actual_type is not val_type) or (lenient and not isinstance(val_to_check, val_type)):
         typename = val_type.__name__
         errmsg = f"{prefix}'{var_name}' must be of type {typename}{suffix}"
         cause = TypeError(errmsg)
         exc = exception_to_raise(errmsg, exit_code=exit_code)
         exc.__cause__ = cause
-
-        if raise_from_caller:
-            frame = inspect.currentframe()
-            caller_frame = frame.f_back if frame else None
-            if caller_frame:
-                fake_tb = types.TracebackType(
-                    tb_next=None,
-                    tb_frame=caller_frame,
-                    tb_lasti=caller_frame.f_lasti,
-                    tb_lineno=caller_frame.f_lineno
-                )
-                raise exc.with_traceback(fake_tb)
         raise exc from cause
     return True
 # endregion
