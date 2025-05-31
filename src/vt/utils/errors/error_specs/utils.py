@@ -28,7 +28,7 @@ def require_type(
         prefix: str = '',
         suffix: str = '',
         raise_from_caller: bool = True
-) -> None: ...
+) -> TypeGuard[bool]: ...
 
 @overload
 def require_type(
@@ -41,7 +41,7 @@ def require_type(
         prefix: str = '',
         suffix: str = '',
         raise_from_caller: bool = True
-) -> None: ...
+) -> TypeGuard[int]: ...
 
 @overload
 def require_type(
@@ -54,7 +54,7 @@ def require_type(
         prefix: str = '',
         suffix: str = '',
         raise_from_caller: bool = True
-) -> None: ...
+) -> TypeGuard[float]: ...
 
 @overload
 def require_type(
@@ -67,7 +67,7 @@ def require_type(
         prefix: str = '',
         suffix: str = '',
         raise_from_caller: bool = True
-) -> None: ...
+) -> TypeGuard[str]: ...
 
 def require_type[T](
         val_to_check: T,
@@ -79,7 +79,7 @@ def require_type[T](
         prefix: str = '',
         suffix: str = '',
         raise_from_caller: bool = True
-) -> None:
+) -> TypeGuard[T]:
     """
     Validates that the provided value matches the specified type. If it does not,
     raises a configurable exception, optionally spoofing the traceback to appear from
@@ -108,21 +108,21 @@ def require_type[T](
 
     :example:
 
-    >>> require_type(123, "count", int)
-    >>> require_type("abc", "name", str)
+    >>> _ = require_type(123, "count", int)
+    >>> _ = require_type("abc", "name", str)
 
-    >>> require_type(123, "flag", bool)
+    >>> _ = require_type(123, "flag", bool)
     Traceback (most recent call last):
         ...
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'flag' must be of type bool
 
-    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
+    >>> _ = require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
     Traceback (most recent call last):
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: ConfigError: 'count' must be of type int Refer to docs.
 
     >>> class MyTypedException(VTExitingException): pass
 
-    >>> require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected boo, provided None
+    >>> _ = require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected boo, provided None
     Traceback (most recent call last):
     error_specs.utils.MyTypedException: TypeError: 'is_ready' must be of type bool
     """
@@ -145,6 +145,7 @@ def require_type[T](
                 )
                 raise exc.with_traceback(fake_tb)
         raise exc from cause
+    return True
 # endregion
 
 
