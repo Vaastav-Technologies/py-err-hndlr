@@ -18,11 +18,12 @@ from vt.utils.errors.error_specs.exceptions import VTExitingException
 
 
 # region require_type() and its overloads
+
 @overload
 def require_type(
-        val_to_check: int,
+        val_to_check: bool,
         var_name: str,
-        val_type: type[int],
+        val_type: type[bool],
         exception_to_raise: type[VTExitingException] = VTExitingException,
         exit_code: int = ERR_DATA_FORMAT_ERR,
         *,
@@ -33,9 +34,9 @@ def require_type(
 
 @overload
 def require_type(
-        val_to_check: bool,
+        val_to_check: int,
         var_name: str,
-        val_type: type[bool],
+        val_type: type[int],
         exception_to_raise: type[VTExitingException] = VTExitingException,
         exit_code: int = ERR_DATA_FORMAT_ERR,
         *,
