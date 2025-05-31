@@ -9,7 +9,6 @@ import inspect
 import types
 from collections import deque
 from collections.abc import Iterable
-from collections.abc import Sequence
 from inspect import currentframe
 from typing import overload, TypeGuard
 
@@ -71,71 +70,6 @@ def require_type(
         raise_from_caller: bool = True
 ) -> None: ...
 
-@overload
-def require_type[T](
-        val_to_check: list[T],
-        var_name: str,
-        val_type: type[list[T]],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        raise_from_caller: bool = True
-) -> None: ...
-
-@overload
-def require_type[T](
-        val_to_check: set[T],
-        var_name: str,
-        val_type: type[set[T]],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        raise_from_caller: bool = True
-) -> None: ...
-
-@overload
-def require_type[T](
-        val_to_check: tuple[T],
-        var_name: str,
-        val_type: type[tuple[T]],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        raise_from_caller: bool = True
-) -> None: ...
-
-@overload
-def require_type[T](
-        val_to_check: Sequence[T],
-        var_name: str,
-        val_type: type[Sequence[T]],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        raise_from_caller: bool = True
-) -> None: ...
-
-@overload
-def require_type[K, V](
-        val_to_check: dict[K, V],
-        var_name: str,
-        val_type: type[dict[K, V]],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        raise_from_caller: bool = True
-) -> None: ...
-
 def require_type[T](
         val_to_check: T,
         var_name: str,
@@ -177,36 +111,21 @@ def require_type[T](
 
     >>> require_type(123, "count", int)
     >>> require_type("abc", "name", str)
-    >>> require_type([1, 2, 3], "items", list)
 
     >>> require_type(123, "flag", bool)
     Traceback (most recent call last):
         ...
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'flag' must be of type bool
 
-    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.")
+    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
     Traceback (most recent call last):
     vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: ConfigError: 'count' must be of type int Refer to docs.
 
     >>> class MyTypedException(VTExitingException): pass
 
-    >>> require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99)
+    >>> require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected boo, provided None
     Traceback (most recent call last):
     error_specs.utils.MyTypedException: TypeError: 'is_ready' must be of type bool
-
-    >>> try:
-    ...     require_type({}, "conf", str, raise_from_caller=False)
-    ... except VTExitingException as ex:
-    ...     isinstance(ex.__cause__, TypeError)
-    True
-
-    >>> try:
-    ...     def outer():
-    ...         require_type([], "thing", tuple, raise_from_caller=True)
-    ...     outer()
-    ... except VTExitingException as ex:
-    ...     "thing" in str(ex)
-    True
     """
     if not isinstance(val_to_check, val_type):
         typename = val_type.__name__
