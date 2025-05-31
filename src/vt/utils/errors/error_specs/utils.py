@@ -273,23 +273,19 @@ def require_iterable[T](
 
         Enforcing wrong container type::
 
-        >>> _ = require_iterable(
-        ... {1, 2}, # type: ignore[arg-type]
-        ... "expect_list", item_type=int, enforce=list)
+        >>> _ = require_iterable({1, 2}, "expect_list", item_type=int, enforce=list) # type: ignore[arg-type] # expected list, provided set
         Traceback (most recent call last):
         vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'expect_list' must be of type list
 
         Rejecting non-iterable input::
 
-        >>> _ = require_iterable(
-        ... 123, # type: ignore[arg-type] # expects iterable, provided int
-        ... "not_iter")
+        >>> _ = require_iterable(123, "not_iter") # type: ignore[arg-type] # expects iterable, provided int
         Traceback (most recent call last):
         vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'not_iter' must be an iterable (not a string)
 
         Rejecting string even though it is iterable::
 
-        >>> require_iterable("abc", "str_input")
+        >>> require_iterable("abc", "str_input") # type: ignore[arg-type] # expects non-str iterable, provided str
         Traceback (most recent call last):
         vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'str_input' must be an iterable (not a string)
 
