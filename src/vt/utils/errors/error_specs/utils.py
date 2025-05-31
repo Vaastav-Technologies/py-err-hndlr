@@ -17,7 +17,6 @@ from vt.utils.errors.error_specs.exceptions import VTExitingException
 
 
 # region require_type() and its overloads
-
 @overload
 def require_type(
         val_to_check: bool,
