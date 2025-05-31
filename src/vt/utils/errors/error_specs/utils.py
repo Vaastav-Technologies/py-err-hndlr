@@ -270,7 +270,7 @@ def require_iterable[T](
 
         >>> _ = require_iterable([1, "two"], "bad_list", item_type=int)
         Traceback (most recent call last):
-        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'bad_list' must be a iterable of int
+        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'bad_list' must be a iterable of ints
 
         Enforcing wrong container type::
 
@@ -282,13 +282,13 @@ def require_iterable[T](
 
         >>> _ = require_iterable(123, "not_iter") # type: ignore[arg-type] # expects iterable, provided int
         Traceback (most recent call last):
-        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'not_iter' must be an iterable (not a string)
+        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'not_iter' must be a non-str iterable
 
         Rejecting string even though it is iterable::
 
         >>> require_iterable("abc", "str_input") # type: ignore[arg-type] # expects non-str iterable, provided str
         Traceback (most recent call last):
-        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'str_input' must be an iterable (not a string)
+        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'str_input' must be a non-str iterable
 
         Rejecting non-empty constraint::
 
@@ -319,7 +319,7 @@ def require_iterable[T](
         raise exc from cause
 
     if isinstance(val_to_check, str) or not isinstance(val_to_check, Iterable):
-        raise_error(f"{prefix}'{var_name}' must be an non-str iterable {suffix}")
+        raise_error(f"{prefix}'{var_name}' must be a non-str iterable{suffix}")
 
     iterable_type_str = 'iterable'
     if enforce is not None:
@@ -335,6 +335,6 @@ def require_iterable[T](
     if item_type is not None:
         for v in val_to_check:
             if not isinstance(v, item_type):
-                raise_error(f"{prefix}'{var_name}' must be a {iterable_type_str} of {item_type.__name__}{suffix}")
+                raise_error(f"{prefix}'{var_name}' must be a {iterable_type_str} of {item_type.__name__}s{suffix}")
     return True
 # endregion
