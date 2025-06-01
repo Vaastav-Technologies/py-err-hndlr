@@ -5,10 +5,8 @@
 Utility functions for error handling.
 """
 
-import types
 from collections import deque
 from collections.abc import Iterable
-from inspect import currentframe
 from typing import overload, TypeGuard
 
 from vt.utils.errors.error_specs import ERR_DATA_FORMAT_ERR, type_name_map
@@ -166,7 +164,6 @@ def require_iterable[T](
     prefix: str = ...,
     suffix: str = ...,
     empty: bool | None = ...,
-    raise_from_caller: bool = ...
 ) -> TypeGuard[list[T]]: ...
 
 @overload
@@ -181,7 +178,6 @@ def require_iterable[T](
     prefix: str = ...,
     suffix: str = ...,
     empty: bool | None = ...,
-    raise_from_caller: bool = ...
 ) -> TypeGuard[tuple[T, ...]]: ...
 
 @overload
@@ -196,7 +192,6 @@ def require_iterable[T](
     prefix: str = ...,
     suffix: str = ...,
     empty: bool | None = ...,
-    raise_from_caller: bool = ...
 ) -> TypeGuard[set[T]]: ...
 
 @overload
@@ -211,7 +206,6 @@ def require_iterable[T](
     prefix: str = ...,
     suffix: str = ...,
     empty: bool | None = ...,
-    raise_from_caller: bool = ...
 ) -> TypeGuard[deque[T]]: ...
 
 @overload
@@ -226,7 +220,6 @@ def require_iterable(
     prefix: str = ...,
     suffix: str = ...,
     empty: bool | None = ...,
-    raise_from_caller: bool = ...
 ) -> TypeGuard[range]: ...
 
 def require_iterable[T](
@@ -240,7 +233,6 @@ def require_iterable[T](
     prefix: str = '',
     suffix: str = '',
     empty: bool | None = None,
-    raise_from_caller: bool = True
 ) -> TypeGuard[Iterable[T]]:
     """
     Validate that the input is an iterable (excluding ``str``). Optionally enforce a specific iterable type
@@ -255,7 +247,6 @@ def require_iterable[T](
     :param prefix: Prefix to prepend to error message
     :param suffix: Suffix to append to error message
     :param empty: If set to True, ensures the iterable is empty; if False, ensures it is not
-    :param raise_from_caller: Whether to spoof traceback from the caller
 
     :raises: exception_to_raise
 
@@ -298,47 +289,37 @@ def require_iterable[T](
 
         >>> _ = require_iterable([], "should_be_nonempty", empty=False)
         Traceback (most recent call last):
-        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'should_be_nonempty' must not be empty
+        vt.utils.errors.error_specs.exceptions.VTExitingException: ValueError: 'should_be_nonempty' must not be empty
 
         Rejecting empty constraint::
 
         >>> _ = require_iterable([1], "should_be_empty", empty=True)
         Traceback (most recent call last):
-        vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'should_be_empty' must be empty
+        vt.utils.errors.error_specs.exceptions.VTExitingException: ValueError: 'should_be_empty' must be empty
     """
-    def raise_error(msg: str):
-        cause = TypeError(msg)
-        exc = exception_to_raise(msg, exit_code=exit_code)
-        exc.__cause__ = cause
-        if raise_from_caller:
-            frame = currentframe()
-            if frame and (caller := frame.f_back):
-                tb = types.TracebackType(
-                    tb_next=None,
-                    tb_frame=caller,
-                    tb_lasti=caller.f_lasti,
-                    tb_lineno=caller.f_lineno
-                )
-                raise exc.with_traceback(tb)
-        raise exc from cause
 
     if isinstance(val_to_check, str) or not isinstance(val_to_check, Iterable):
-        raise_error(f"{prefix}'{var_name}' must be a non-str iterable{suffix}")
+        errmsg = f"{prefix}'{var_name}' must be a non-str iterable{suffix}"
+        raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
 
     iterable_type_str = 'iterable'
     if enforce is not None:
         iterable_type_str = getattr(enforce, '__name__', str(enforce))
         if not isinstance(val_to_check, enforce):
-            raise_error(f"{prefix}'{var_name}' must be of type {enforce.__name__}{suffix}")
+            errmsg = f"{prefix}'{var_name}' must be of type {enforce.__name__}{suffix}"
+            raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
 
     if empty is True and any(True for _ in val_to_check):
-        raise_error(f"{prefix}'{var_name}' must be empty{suffix}")
+        errmsg = f"{prefix}'{var_name}' must be empty{suffix}"
+        raise exception_to_raise(errmsg, exit_code=exit_code) from ValueError(errmsg)
     if empty is False and not any(True for _ in val_to_check):
-        raise_error(f"{prefix}'{var_name}' must not be empty{suffix}")
+        errmsg = f"{prefix}'{var_name}' must not be empty{suffix}"
+        raise exception_to_raise(errmsg, exit_code=exit_code) from ValueError(errmsg)
 
     if item_type is not None:
         for v in val_to_check:
             if not isinstance(v, item_type):
-                raise_error(f"{prefix}'{var_name}' must be a {iterable_type_str} of {item_type.__name__}s{suffix}")
+                errmsg = f"{prefix}'{var_name}' must be a {iterable_type_str} of {item_type.__name__}s{suffix}"
+                raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
     return True
 # endregion
