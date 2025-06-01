@@ -11,7 +11,7 @@ from collections.abc import Iterable
 from inspect import currentframe
 from typing import overload, TypeGuard
 
-from vt.utils.errors.error_specs import ERR_DATA_FORMAT_ERR
+from vt.utils.errors.error_specs import ERR_DATA_FORMAT_ERR, type_name_map
 from vt.utils.errors.error_specs.exceptions import VTExitingException
 
 
@@ -26,7 +26,8 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        lenient: bool = False
+        lenient: bool = False,
+        type_name_mapping: dict[type, str] | None = None
 ) -> TypeGuard[bool]: ...
 
 @overload
@@ -39,7 +40,8 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        lenient: bool = False
+        lenient: bool = False,
+        type_name_mapping: dict[type, str] | None = None
 ) -> TypeGuard[int]: ...
 
 @overload
@@ -52,7 +54,8 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        lenient: bool = False
+        lenient: bool = False,
+        type_name_mapping: dict[type, str] | None = None
 ) -> TypeGuard[float]: ...
 
 @overload
@@ -65,7 +68,8 @@ def require_type(
         *,
         prefix: str = '',
         suffix: str = '',
-        lenient: bool = False
+        lenient: bool = False,
+        type_name_mapping: dict[type, str] | None = None
 ) -> TypeGuard[str]: ...
 
 def require_type[T](
@@ -77,7 +81,8 @@ def require_type[T](
         *,
         prefix: str = '',
         suffix: str = '',
-        lenient: bool = False
+        lenient: bool = False,
+        type_name_mapping: dict[type, str] | None = None
 ) -> TypeGuard[T]:
     """
     Validates that the provided value matches the specified type. If it does not,
@@ -101,6 +106,7 @@ def require_type[T](
         this options is ``True``). If False, uses strict `type(...) is ...`, i.e., ``bool`` is no longer considered an
         ``int``.
     :type lenient: bool
+    :param type_name_mapping: name mapping between types, like str -> string.
 
     :raises exception_to_raise: If the value is not an instance of ``val_type``.
 
@@ -116,7 +122,7 @@ def require_type[T](
 
     >>> require_type(True, "count", int)
     Traceback (most recent call last):
-    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'count' must be of type int
+    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'count' must be an int
 
     Lenient checks pass ``True`` or ``bool`` as a type of ``int``:
 
@@ -125,26 +131,24 @@ def require_type[T](
 
     >>> require_type(123, "flag", bool)
     Traceback (most recent call last):
-    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'flag' must be of type bool
+    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: 'flag' must be a boolean
 
-    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=" Refer to docs.") # type: ignore[arg-type] expected int, provided str
+    >>> require_type("xyz", "count", int, prefix="ConfigError: ", suffix=". Refer to docs.") # type: ignore[arg-type] expected int, provided str
     Traceback (most recent call last):
-    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: ConfigError: 'count' must be of type int Refer to docs.
+    vt.utils.errors.error_specs.exceptions.VTExitingException: TypeError: ConfigError: 'count' must be an int. Refer to docs.
 
     >>> class MyTypedException(VTExitingException): pass
 
     >>> require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99) # type: ignore[arg-type] expected bool, provided None
     Traceback (most recent call last):
-    error_specs.utils.MyTypedException: TypeError: 'is_ready' must be of type bool
+    error_specs.utils.MyTypedException: TypeError: 'is_ready' must be a boolean
     """
     actual_type = type(val_to_check)
     if (not lenient and actual_type is not val_type) or (lenient and not isinstance(val_to_check, val_type)):
-        typename = val_type.__name__
-        errmsg = f"{prefix}'{var_name}' must be of type {typename}{suffix}"
-        cause = TypeError(errmsg)
-        exc = exception_to_raise(errmsg, exit_code=exit_code)
-        exc.__cause__ = cause
-        raise exc from cause
+        type_name_mapping = type_name_mapping or type_name_map
+        typename = type_name_mapping.get(val_type, f"an instance of {getattr(val_type, '__name__', str(val_type))}")
+        errmsg = f"{prefix}'{var_name}' must be {typename}{suffix}"
+        raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
     return True
 # endregion
 
