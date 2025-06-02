@@ -63,7 +63,7 @@ class ErrorMessageFormer:
             return items[0]
 
     def not_allowed_together(self, first_arg: str, second_arg: str, *args: str,
-                             suffix: str = " are not allowed together.", prefix: str = "") -> str:
+                             prefix: str = "", suffix: str = " are not allowed together.") -> str:
         """
         Builds and returns an error message for arguments that are not to be supplied together.
 
@@ -84,8 +84,8 @@ class ErrorMessageFormer:
         :param first_arg: The first argument name.
         :param second_arg: The second argument name.
         :param args: Additional argument names.
-        :param suffix: The string to append to the error message.
         :param prefix: The string to prepend to the error message.
+        :param suffix: The string to append to the error message.
         :return: Error message string.
         :raises KeyError: If 'and' conjunction is missing from configuration.
         """
@@ -93,7 +93,7 @@ class ErrorMessageFormer:
         return f"{prefix}{self._join_args(all_args, 'and')}{suffix}"
 
     def at_least_one_required(self, first_arg: str, second_arg: str, *args: str,
-                              suffix: str = " is required.", prefix: str = "") -> str:
+                              prefix: str = "", suffix: str = " is required.") -> str:
         """
         Builds and returns an error message indicating that at least one of the arguments is required.
 
@@ -111,8 +111,8 @@ class ErrorMessageFormer:
         :param first_arg: The first argument name.
         :param second_arg: The second argument name.
         :param args: Additional argument names.
-        :param suffix: The string to append to the message.
         :param prefix: The string to prepend to the message.
+        :param suffix: The string to append to the message.
         :return: Error message string.
         :raises KeyError: If 'or' conjunction is missing from configuration.
         """
@@ -121,7 +121,7 @@ class ErrorMessageFormer:
         return f"{prefix}Either {joined}{suffix}"
 
     def all_required(self, first_arg: str, second_arg: str, *args: str,
-                     suffix: str = " are required.", prefix: str = "") -> str:
+                     prefix: str = "", suffix: str = " are required.") -> str:
         """
         Builds and returns an error message stating that all arguments must be supplied.
 
@@ -141,8 +141,8 @@ class ErrorMessageFormer:
         :param first_arg: The first argument name.
         :param second_arg: The second argument name.
         :param args: Additional argument names.
-        :param suffix: The string to append to the message.
         :param prefix: The string to prepend to the message.
+        :param suffix: The string to append to the message.
         :return: Error message string.
         :raises KeyError: If 'and' conjunction is missing from configuration.
         """
@@ -186,8 +186,8 @@ class ErrorMessageFormer:
             done if this value is ``None`` or not provided.
         :param choices: all the acceptable choices. Choices are not included in the error message if this value
             is ``None`` or not supplied.
-        :param suffix: The string to append to the message.
         :param prefix: The string to prepend to the message.
+        :param suffix: The string to append to the message.
         :return: The formed errmsg string.
         """
         msg = f"{prefix}{emphasis + ' ' if emphasis else ''}{value}."
