@@ -14,7 +14,7 @@ class ErrorMessageFormer:
 
     A configurable utility class for generating structured and reusable error messages for validation.
 
-    This class supports locale-style customization such as Oxford comma usage, conjunction word changes
+    This class supports Oxford comma usage, conjunction word changes
     (e.g., replacing "and"/"or" with localized alternatives), and suffix formatting. It is intended
     to be subclassed or cloned via `clone_with()` for further customization.
 
@@ -29,16 +29,13 @@ class ErrorMessageFormer:
 
     def __init__(
             self,
-            locale: str = "en",
             use_oxford_comma: bool = False,
             conjunctions: dict[str, str] | None = None
     ):
         """
-        :param locale: The locale for the message structure (currently placeholder).
         :param use_oxford_comma: Whether to use an Oxford comma before the final conjunction.
         :param conjunctions: A mapping like {'and': 'and', 'or': 'or'} to customize conjunctions.
         """
-        self.locale = locale
         self.use_oxford_comma = use_oxford_comma
         self.conjunctions = conjunctions or {"and": "and", "or": "or"}
 
@@ -196,7 +193,9 @@ class ErrorMessageFormer:
         msg += suffix
         return msg
 
-    def clone_with(self, **kwargs) -> "ErrorMessageFormer":
+    def clone_with(self,
+                   use_oxford_comma: bool | None = None,
+                   conjunctions: dict[str, str] | None = None) -> "ErrorMessageFormer":
         """
         Returns a new instance of ErrorMessageFormer with the given overrides.
 
@@ -205,16 +204,28 @@ class ErrorMessageFormer:
             >>> custom = ErrorMsgFormer.clone_with(use_oxford_comma=False)
             >>> custom.not_allowed_together('a', 'b', 'c')
             'a, b and c are not allowed together.'
+
+            >>> custom = custom.clone_with(use_oxford_comma=True)
+            >>> custom.not_allowed_together('a', 'b', 'c')
+            'a, b, and c are not allowed together.'
+
+            >>> custom = custom.clone_with(conjunctions={'and': '--and--'})
+            >>> custom.not_allowed_together('a', 'b', 'c')
+            'a, b, --and-- c are not allowed together.'
+
+            Default conjuntion is picked-up if conjuntions are falsy empty-dict:
+
+            >>> custom = custom.clone_with(conjunctions={})
+            >>> custom.not_allowed_together('a', 'b', 'c')
+            'a, b, --and-- c are not allowed together.'
         """
         return ErrorMessageFormer(
-            locale=kwargs.get("locale", self.locale),
-            use_oxford_comma=kwargs.get("use_oxford_comma", self.use_oxford_comma),
-            conjunctions=kwargs.get("conjunctions", self.conjunctions.copy())
+            use_oxford_comma=use_oxford_comma if use_oxford_comma is not None else self.use_oxford_comma,
+            conjunctions=conjunctions or self.conjunctions.copy()
         )
 
     def __repr__(self) -> str:
         return (f"<{self.__class__.__name__}("
-                f"locale='{self.locale}', "
                 f"use_oxford_comma={self.use_oxford_comma}, "
                 f"conjunctions={self.conjunctions})>")
 
