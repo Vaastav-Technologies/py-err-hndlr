@@ -5,7 +5,7 @@
 Utility methods for error specifications.
 """
 
-from typing import Any
+from typing import Any, Literal
 
 
 class ErrorMessageFormer:
@@ -42,7 +42,7 @@ class ErrorMessageFormer:
         self.use_oxford_comma = use_oxford_comma
         self.conjunctions = conjunctions or {"and": "and", "or": "or"}
 
-    def _join_args(self, items: list[str], conj_type: str, surround_item: str = "") -> str:
+    def _join_args(self, items: list[str], conj_type: Literal["and", "or"], surround_item: str = "") -> str:
         """
         Helper to join a list of arguments using the correct conjunction and comma rules.
 
