@@ -212,6 +212,12 @@ class ErrorMessageFormer:
             conjunctions=kwargs.get("conjunctions", self.conjunctions.copy())
         )
 
+    def __repr__(self) -> str:
+        return (f"<{self.__class__.__name__}("
+                f"locale='{self.locale}', "
+                f"use_oxford_comma={self.use_oxford_comma}, "
+                f"conjunctions={self.conjunctions})>")
+
 
 ErrorMsgFormer = ErrorMessageFormer()
 """
