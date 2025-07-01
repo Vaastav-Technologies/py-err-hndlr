@@ -432,32 +432,32 @@ if __name__ == '__main__':
         print('|'*50, file=file)
         print('='*50, file=file)
 
-    l = logging.getLogger()
+    log = logging.getLogger()
     try:
         raise VTException from ValueError('a message.')
     except VTException as e:
-        l.exception('exception')
+        log.exception('exception')
         print('-'*50, file=sys.stderr)
-        l.error(e)
+        log.error(e)
     log_sep()
 
     try:
         raise VTException('a message.') from ValueError
     except VTException as e:
-        l.exception('exception')
+        log.exception('exception')
         print('-'*50, file=sys.stderr)
-        l.error(e)
+        log.error(e)
     log_sep()
 
     try:
         try:
             raise VTException('a message.') from ValueError('unexpected.')
         except VTException as e:
-            l.exception('exception')
+            log.exception('exception')
             print('-'*50, file=sys.stderr)
-            l.error(e)
+            log.error(e)
             raise VTException('Yo man') from e
     except VTException as e:
-        l.exception('reraised.')
+        log.exception('reraised.')
         print('-'*50, file=sys.stderr)
-        l.error(e)
+        log.error(e)
