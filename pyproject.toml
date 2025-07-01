@@ -44,6 +44,11 @@ test = ["pytest", "pytest-cov"]
 multitest = ["tox"]
 doc = ["sphinx", "sphinx-argparse"]
 
+[project.urls]
+homepage = "https://github.com/Vaastav-Technologies/py-err-hndlr"
+source = "https://github.com/Vaastav-Technologies/py-err-hndlr"
+issues = "https://github.com/Vaastav-Technologies/py-eerr-hndlr/issues"
+
 [tool.setuptools.packages.find]
 where = ["src/"]
 namespaces = true
