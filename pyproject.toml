@@ -50,9 +50,8 @@ dependencies = [
 # referred to as "extras". For a more extensive definition see:
 # https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras
 [dependency-groups]
-dev = ["mypy"]
-test = ["pytest", "coverage"]
 dev = ["mypy", "ruff"]
+test = ["pytest", "pytest-cov"]
 multitest = ["tox"]
 doc = ["sphinx", "sphinx-argparse"]
 
