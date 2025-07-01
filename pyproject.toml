@@ -10,7 +10,7 @@ name = "vt-err-hndlr"
 version = "0.0.0"
 description = "Common errors and warnings for Vaastav Technologies (vt) projects."
 readme = "README"
-keywords = ["error", "error-handling", "error-handler"]
+keywords = ["error", "error-handling", "error-handler", "warning", "warn"]
 authors = [
     {name = "Suhas Krishna Srivastava", email = "suhas.srivastava@vaastav.tech"}
 ]
