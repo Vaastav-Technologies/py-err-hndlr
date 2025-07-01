@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"  # If not defined, then legacy behavior 
 name = "vt-err-hndlr"
 version = "0.0.0"
 description = "Common errors and warnings for Vaastav Technologies (vt) projects."
-readme = "README"
+readme = "README.md"
 keywords = ["error", "error-handling", "error-handler", "warning", "warn"]
 authors = [
     {name = "Suhas Krishna Srivastava", email = "suhas.srivastava@vaastav.tech"}
