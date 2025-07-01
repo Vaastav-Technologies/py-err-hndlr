@@ -49,7 +49,7 @@ dependencies = [
 # Optional dependencies the project provides. These are commonly
 # referred to as "extras". For a more extensive definition see:
 # https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras
-[project.optional-dependencies]
+[dependency-groups]
 dev = ["mypy"]
 test = ["pytest", "coverage"]
 multitest = ["tox"]
