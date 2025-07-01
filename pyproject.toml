@@ -1,8 +1,6 @@
 [build-system]
-# A list of packages that are needed to build your package:
-requires = ["setuptools", "wheel"]  # REQUIRED if [build-system] table is used
-# The name of the Python object that frontends will use to perform the build:
-build-backend = "setuptools.build_meta"  # If not defined, then legacy behavior can happen.
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 
 [project]
@@ -18,7 +16,7 @@ maintainers = [
     {name = "Suhas Krishna Srivastava", email = "suhas.srivastava@vaastav.tech"}
 ]
 requires-python = ">=3.12"
-# For a list of valid classifiers, see https://pypi.org/classifiers/
+
 classifiers = [
   "Development Status :: 1 - Planning",
 
@@ -36,15 +34,6 @@ dependencies = [
   "vt-commons"
 ]
 
-# List additional groups of dependencies here (e.g. development
-# dependencies). Users will be able to install these using the "extras"
-# syntax, for example:
-#
-#   $ pip install sampleproject[dev]
-#
-# Optional dependencies the project provides. These are commonly
-# referred to as "extras". For a more extensive definition see:
-# https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras
 [dependency-groups]
 dev = ["mypy", "ruff"]
 test = ["pytest", "pytest-cov"]
