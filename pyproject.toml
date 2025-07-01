@@ -53,7 +53,7 @@ doc = ["sphinx", "sphinx-argparse"]
 
 [tool.setuptools.packages.find]
 where = ["src/"]
-
+namespaces = true
 
 [tool.tox]
 legacy_tox_ini = """
