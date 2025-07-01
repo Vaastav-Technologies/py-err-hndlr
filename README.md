@@ -11,4 +11,4 @@
 
 ---
 
-Collection of common python interfaces and handers for errors and warnings.
+Fully typed collection of common python interfaces and handers for errors and warnings.
