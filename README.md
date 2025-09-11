@@ -1,5 +1,6 @@
 # vt-err-hndlr
 
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/vt-err-hndlr)
 ![PyPI - Types](https://img.shields.io/pypi/types/vt-err-hndlr)
 ![GitHub License](https://img.shields.io/github/license/Vaastav-Technologies/py-err-hndlr)
 [![🔧 test](https://github.com/Vaastav-Technologies/py-err-hndlr/actions/workflows/test.yml/badge.svg)](https://github.com/Vaastav-Technologies/py-err-hndlr/actions/workflows/test.yml)
