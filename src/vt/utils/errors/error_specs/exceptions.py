@@ -6,9 +6,11 @@ Exceptions and exception hierarchies native to `Vaastav Technologies (OPC) Priva
 """
 from abc import abstractmethod
 from subprocess import CalledProcessError
-from typing import Protocol, override
+from typing import Protocol, override, overload
 from vt.utils.commons.commons.core_py import fallback_on_none_strict
-from vt.utils.errors.error_specs import ERR_GENERIC_ERR
+from vt.utils.errors.error_specs import ERR_GENERIC_ERR, ERR_CMD_NOT_FOUND, ErrorMsgFormer
+
+errmsg = ErrorMsgFormer
 
 
 class HasExitCode(Protocol):
@@ -418,6 +420,211 @@ class VTCmdException(VTExitingException):
                 raise TypeError(f"Expected cause to be CalledProcessError, got {type(self.__cause__)}.")
             return self.__cause__
         return self.called_process_error
+
+
+class VTCmdNotFoundError(VTExitingException):
+    """
+    A ``VTExitingException`` that is raised when a supposedly runnable command is not found.
+    """
+
+    @overload
+    def __init__(self, *args, command: str | list[str], exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
+        ...
+
+    @overload
+    def __init__(self, *args, file_not_found_error: FileNotFoundError, exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
+        ...
+
+    def __init__(self, *args, command: str | list[str] | None = None, file_not_found_error: FileNotFoundError | None = None,
+                 exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
+        """
+        Examples:
+
+          * Minimal usage with only `command`:
+
+            * When `command` is ``str``:
+
+              >>> from subprocess import CalledProcessError
+              >>> raise VTCmdNotFoundError(command="non-existent-command") # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: Command `non-existent-command` not found
+
+            * When `command -i` is ``list[str]`` (likely split by ``shlex.spli()``):
+
+              >>> from subprocess import CalledProcessError
+              >>> raise VTCmdNotFoundError(command=["non-existent-command", "-i"]) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: Command ['non-existent-command', '-i'] not found
+
+          * With custom message:
+
+            >>> raise VTCmdNotFoundError('Command failed', command="ne-cmd") # always use `from` clause.
+            Traceback (most recent call last):
+            error_specs.exceptions.VTCmdNotFoundError: ('Command failed', 'Command `ne-cmd` not found')
+
+          * With overridden exit code:
+
+            * Without ``file_not_found_error``:
+
+              >>> raise VTCmdNotFoundError(command="ne-cmd", exit_code=42) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: Command `ne-cmd` not found
+
+            * With ``file_not_found_error``:
+
+              >>> raise VTCmdNotFoundError(command="ne-cmd", file_not_found_error=FileNotFoundError("ne-cmd"), exit_code=42) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
+
+            * With ``file_not_found_error``:
+
+              >>> fe = FileNotFoundError()
+              >>> raise VTCmdNotFoundError(command="ne-cmd", file_not_found_error=fe, exit_code=42) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
+
+          * Atleast one of ``file_not_found_error`` or ``command`` must be provided:
+
+            >>> raise VTCmdNotFoundError()
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
+
+
+          * Without a custom message (defaults to CalledProcessError's __str__):
+
+            >>> err = CalledProcessError(127, 'git --version')
+            >>> raise VTCmdException(called_process_error=err) # always use `from` clause.
+            Traceback (most recent call last):
+            error_specs.exceptions.VTCmdException: CalledProcessError: Command 'git --version' returned non-zero exit status 127.
+
+          * Chaining with `from` clause (preserves original stacktrace):
+
+            >>> try:
+            ...     raise CalledProcessError(128, ['git', 'fetch'], stderr='fatal: repository not found')
+            ... except CalledProcessError as _e:
+            ...     raise VTCmdException('Git fetch failed', called_process_error=_e) from _e
+            Traceback (most recent call last):
+            error_specs.exceptions.VTCmdException: CalledProcessError: Git fetch failed
+
+          * `cause` reflects the `from` error when available:
+
+            >>> try:
+            ...     raise CalledProcessError(3, ['whoami'])
+            ... except CalledProcessError as _e:
+            ...     try:
+            ...         raise VTCmdException('Whoami failed', called_process_error=_e) from _e
+            ...     except VTCmdException as ve:
+            ...         isinstance(ve.cause, CalledProcessError)
+            True
+
+          * `cause` falls back to `called_process_error` if not chained:
+
+            >>> _e = CalledProcessError(1, 'ls')
+            >>> ve = VTCmdException('Not chained', called_process_error=_e) # always use the `from` clause.
+            >>> ve.cause is ve.called_process_error
+            True
+
+          * Access `exit_code` property (inherited from `VTExitingException`):
+
+            >>> _e = CalledProcessError(99, ['fake-cmd'])
+            >>> ve = VTCmdException('Custom fail', called_process_error=_e) # always use the `from` clause.
+            >>> ve.exit_code
+            99
+
+          * Explicit override of exit code:
+
+            >>> ve = VTCmdException('Manual exit code', called_process_error=_e, exit_code=11) # always use the `from` clause.
+            >>> ve.exit_code
+            11
+
+          * Structured representation using `to_dict()`:
+
+            >>> d = VTCmdException('Structured', called_process_error=_e).to_dict()
+            >>> d["type"], d["message"]
+            ('VTCmdException', 'CalledProcessError: Structured')
+
+          * Raise with extra keyword arguments (retained in `.kwargs`):
+
+            >>> ve = VTCmdException('With meta', called_process_error=_e, meta='x')
+            >>> ve.kwargs['meta']
+            'x'
+
+        :param args: arguments for ``Exception``.
+        :param command: ``str`` command for the non-existant command which was attempted to run. ``list[str]`` for
+            non-existent commands that are ``shlex.split``'ed.
+        :param file_not_found_error: the ``CalledProcessError`` that is to be encapsulated within this exception.
+        :param exit_code: exit code supplied by the caller else exit code of the called process which err'd if
+            ``None`` supplied or exit code not provided by the user.
+        :param kwargs: extra keyword-args for more info storage.
+        """
+        if not command and not file_not_found_error:
+            raise ValueError(errmsg.at_least_one_required("command", "file_not_found_error"))
+        if command:
+            args = (*args, f"Command {f"`{command}`" if isinstance(command, str) else command} not found",)
+        if file_not_found_error and not isinstance(file_not_found_error, FileNotFoundError):
+            raise ValueError(f"file_not_found_error must be of type/subtype of FileNotFoundError.")
+        super().__init__(*args, exit_code=exit_code, **kwargs)
+        self.command = command
+        self.file_not_found_error = file_not_found_error
+
+    @override
+    @property
+    def cause(self) -> FileNotFoundError | None:
+        """
+        Examples:
+
+          * Fallback to called_process_error if no cause is set:
+
+            >>> cpe = CalledProcessError(1, ['git', 'status'], output='err', stderr='fail')
+            >>> ex = VTCmdException('git failed', called_process_error=cpe)
+            >>> ex.cause is cpe
+            True
+
+          * Correct usage: ``raise ... from CalledProcessError``:
+
+            >>> try:
+            ...     cpe = CalledProcessError(1, ['git', 'status'])
+            ...     raise VTCmdException('git failed', called_process_error=cpe) from cpe
+            ... except VTCmdException as e:
+            ...     isinstance(e.cause, CalledProcessError)
+            True
+
+          * Incorrect cause: set manually (simulating bad ``from``):
+
+            >>> try:
+            ...     e = VTCmdException('wrong cause', called_process_error=cpe)
+            ...     e.__cause__ = ValueError('not a subprocess error')  # simulate wrong cause
+            ...     _ = e.cause
+            ... except TypeError as t:
+            ...     'Expected cause to be CalledProcessError' in str(t)
+            True
+
+          * Fallback works even when cause is falsy (e.g., returncode 0):
+
+            >>> cpe2 = CalledProcessError(0, ['git', 'status'], output='')
+            >>> ex2 = VTCmdException('noop error', called_process_error=cpe2)
+            >>> ex2.cause is cpe2
+            True
+
+          * Raise with both message and cause:
+
+            >>> try:
+            ...     cpe = CalledProcessError(1, ['git', 'fetch'])
+            ...     raise VTCmdException('Fetch failed', called_process_error=cpe) from cpe
+            ... except VTCmdException as ve:
+            ...     str(ve)
+            'CalledProcessError: Fetch failed'
+
+        :return: the ``__cause__`` of this exception, obtained when exception is raised using a ``from`` clause.
+            Else, ctor ``self.called_process_error`` if no ``from`` clause was used (not recommended).
+        :raise TypeError: if the exception's ``__cause__``, which is set by the ``from`` clause, is anything different
+            from ``CalledProcessError``.
+        """
+        if self.__cause__ is not None:
+            if not isinstance(self.__cause__, FileNotFoundError):
+                raise TypeError(f"Expected cause to be FileNotFoundError, got {type(self.__cause__)}.")
+            return self.__cause__
+        return self.file_not_found_error
 
 
 if __name__ == '__main__':
