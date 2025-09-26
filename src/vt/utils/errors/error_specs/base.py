@@ -51,7 +51,7 @@ class DefaultOrError[T](Protocol):
         """
         :return: whether the supplied ``KeyError`` should be reraised.
         """
-        ...
+        ...  # pragma: no cover
 
 
 class DefaultNoError[T](DefaultOrError[T], Protocol):
@@ -67,7 +67,7 @@ class DefaultNoError[T](DefaultOrError[T], Protocol):
 
         :return: ``False`` always.
         """
-        return False
+        return False  # pragma: no cover
 
 
 class RaiseError[T](DefaultOrError[T]):
@@ -78,12 +78,12 @@ class RaiseError[T](DefaultOrError[T]):
 
         :param raise_error: whether to reraise the supplied ``KeyError``.
         """
-        self._raise_error = raise_error
+        self._raise_error = raise_error  # pragma: no cover
 
     @property
     @abstractmethod
     def raise_error(self) -> bool:
-        return self._raise_error
+        return self._raise_error  # pragma: no cover
 
 
 class WarningWithDefault[T](DefaultOrError[T], Warner, Protocol):
@@ -140,7 +140,7 @@ class StrictWarningWithDefault[T](WarningWithDefault[T], DefaultNoError[T], Prot
         """
         Only warn the user of the caught ``KeyError`` if ``True``, else ignore the ``KeyError`` silently.
         """
-        ...
+        ...  # pragma: no cover
 
 
 class SimpleWarningWithDefault[T](WarningWithDefault[T]):
@@ -153,12 +153,12 @@ class SimpleWarningWithDefault[T](WarningWithDefault[T]):
         :param warn_only: only warn the user of the caught ``KeyError`` when ``True``. Reraise the caught ``KeyError``
             if supplied ``False``.
         """
-        self._warn_only = warn_only
+        self._warn_only = warn_only  # pragma: no cover
 
     @override
     @property
     def warn_only(self) -> bool:
-        return self._warn_only
+        return self._warn_only  # pragma: no cover
 
     @override
     @property
@@ -168,7 +168,7 @@ class SimpleWarningWithDefault[T](WarningWithDefault[T]):
 
         :return: inversion of ``warn_only``.
         """
-        return not self.warn_only
+        return not self.warn_only  # pragma: no cover
 
 
 class NoErrWarningWithDefault[T](StrictWarningWithDefault[T]):
@@ -178,9 +178,9 @@ class NoErrWarningWithDefault[T](StrictWarningWithDefault[T]):
 
         :param warn_only: Only warn the user if supplied ``True``, else ignore the error silently.
         """
-        self._warn_only = warn_only
+        self._warn_only = warn_only  # pragma: no cover
 
     @override
     @property
     def warn_only(self) -> bool:
-        return self._warn_only
+        return self._warn_only  # pragma: no cover

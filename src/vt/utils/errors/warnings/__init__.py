@@ -95,4 +95,4 @@ class Warner(Protocol):
         :return: ``True`` if a warning is to be issued instead of raising an error on an exceptional/erroneous
             circumstance. ``False`` otherwise.
         """
-        ...
+        ...  # pragma: no cover
