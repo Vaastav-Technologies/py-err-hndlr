@@ -440,6 +440,18 @@ class VTCmdNotFoundError(VTExitingException):
         """
         Examples:
 
+          * Atleast one of ``command`` or ``file_not_found_error`` must be provided:
+
+            >>> raise VTCmdNotFoundError() # always use `from` clause.
+            Traceback (most recent call last):
+            ValueError: Either command or file_not_found_error is required
+
+          * ``file_not_found_error`` must be a ``FileNotFoundError`` instance:
+
+            >>> raise VTCmdNotFoundError(file_not_found_error=Exception()) # type: ignore[arg-type] # always use `from` clause.
+            Traceback (most recent call last):
+            TypeError: file_not_found_error must be of type/subtype FileNotFoundError
+
           * Minimal usage with only `command`:
 
             * When `command` is ``str``:
@@ -449,12 +461,32 @@ class VTCmdNotFoundError(VTExitingException):
               Traceback (most recent call last):
               error_specs.exceptions.VTCmdNotFoundError: Command `non-existent-command` not found
 
-            * When `command -i` is ``list[str]`` (likely split by ``shlex.spli()``):
+            * When ``command -i`` is ``list[str]`` (likely split by ``shlex.spli()``):
 
               >>> from subprocess import CalledProcessError
               >>> raise VTCmdNotFoundError(command=["non-existent-command", "-i"]) # always use `from` clause.
               Traceback (most recent call last):
               error_specs.exceptions.VTCmdNotFoundError: Command ['non-existent-command', '-i'] not found
+
+          * Exception message details
+
+            * ``command`` message taken when only command is supplied:
+
+              >>> raise VTCmdNotFoundError(command="ne-cmd") # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: Command `ne-cmd` not found
+
+            * ``file_not_found_error`` message taken when only file_not_found_error is supplied:
+
+              >>> raise VTCmdNotFoundError(file_not_found_error=FileNotFoundError("ne-cmd")) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: ne-cmd
+
+            * command default message taken when both command and file_not_found_error are supplied:
+
+              >>> raise VTCmdNotFoundError(command="ne-cmd", file_not_found_error=FileNotFoundError("ne-cmd")) # always use `from` clause.
+              Traceback (most recent call last):
+              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
 
           * With custom message:
 
@@ -483,28 +515,28 @@ class VTCmdNotFoundError(VTExitingException):
               Traceback (most recent call last):
               error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
 
-          * Atleast one of ``file_not_found_error`` or ``command`` must be provided:
-
-            >>> raise VTCmdNotFoundError()
-              Traceback (most recent call last):
-              error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
-
-
-          * Without a custom message (defaults to CalledProcessError's __str__):
-
-            >>> err = CalledProcessError(127, 'git --version')
-            >>> raise VTCmdException(called_process_error=err) # always use `from` clause.
-            Traceback (most recent call last):
-            error_specs.exceptions.VTCmdException: CalledProcessError: Command 'git --version' returned non-zero exit status 127.
-
           * Chaining with `from` clause (preserves original stacktrace):
 
             >>> try:
-            ...     raise CalledProcessError(128, ['git', 'fetch'], stderr='fatal: repository not found')
-            ... except CalledProcessError as _e:
-            ...     raise VTCmdException('Git fetch failed', called_process_error=_e) from _e
+            ...     raise FileNotFoundError("ne-cmd")
+            ... except FileNotFoundError as _f:
+            ...     raise VTCmdNotFoundError(file_not_found_error=_f) from _f
             Traceback (most recent call last):
-            error_specs.exceptions.VTCmdException: CalledProcessError: Git fetch failed
+            error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: ne-cmd
+
+            >>> try:
+            ...     raise FileNotFoundError(ERR_CMD_NOT_FOUND, "ne-cmd")
+            ... except FileNotFoundError as _f:
+            ...     raise VTCmdNotFoundError(file_not_found_error=_f, exit_code=ERR_CMD_NOT_FOUND) from _f
+            Traceback (most recent call last):
+            error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: [Errno 127] ne-cmd
+
+            >>> try:
+            ...     raise FileNotFoundError("ne-cmd")
+            ... except FileNotFoundError as _f:
+            ...     raise VTCmdNotFoundError(command="ne-cmd", file_not_found_error=_f) from _f
+            Traceback (most recent call last):
+            error_specs.exceptions.VTCmdNotFoundError: FileNotFoundError: Command `ne-cmd` not found
 
           * `cause` reflects the `from` error when available:
 
@@ -562,7 +594,7 @@ class VTCmdNotFoundError(VTExitingException):
         if command:
             args = (*args, f"Command {f"`{command}`" if isinstance(command, str) else command} not found",)
         if file_not_found_error and not isinstance(file_not_found_error, FileNotFoundError):
-            raise ValueError(f"file_not_found_error must be of type/subtype of FileNotFoundError.")
+            raise TypeError(f"file_not_found_error must be of type/subtype FileNotFoundError")
         super().__init__(*args, exit_code=exit_code, **kwargs)
         self.command = command
         self.file_not_found_error = file_not_found_error
