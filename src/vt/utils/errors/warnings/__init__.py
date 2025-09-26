@@ -6,7 +6,6 @@
 Python warnings related helpers.
 """
 
-
 import warnings
 from abc import abstractmethod
 from contextlib import contextmanager
@@ -30,12 +29,22 @@ def suppress_warning_stacktrace(fmt: str = "{category}: {message}\n"):
     :param fmt: Warning print format can be altered by the client code.
     """
     original_format = warnings.formatwarning
-    def no_stack_trace(message: Warning | str,
-                  category: Type[Warning],
-                  filename: str,
-                  lineno: int,
-                  line: str | None = None) -> str:
-        return fmt.format(message=message, category=category.__name__, filename=filename, lineno=lineno, line=line)
+
+    def no_stack_trace(
+        message: Warning | str,
+        category: Type[Warning],
+        filename: str,
+        lineno: int,
+        line: str | None = None,
+    ) -> str:
+        return fmt.format(
+            message=message,
+            category=category.__name__,
+            filename=filename,
+            lineno=lineno,
+            line=line,
+        )
+
     warnings.formatwarning = no_stack_trace
     try:
         yield fmt
@@ -43,7 +52,13 @@ def suppress_warning_stacktrace(fmt: str = "{category}: {message}\n"):
         warnings.formatwarning = original_format
 
 
-def vt_warn(*args, fmt = "{category}: {message}\n", suppress_stacktrace = True, stack_level = 2, **kwargs):
+def vt_warn(
+    *args,
+    fmt="{category}: {message}\n",
+    suppress_stacktrace=True,
+    stack_level=2,
+    **kwargs,
+):
     """
     Warning function to warn without showcasing warning stack-trace. Uses ``suppress_warning_stacktrace`` internally.
 

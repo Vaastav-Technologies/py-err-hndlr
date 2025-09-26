@@ -5,7 +5,6 @@
 Interfaces and some default implementations for error specs.
 """
 
-
 from abc import abstractmethod
 from typing import Any, Protocol, override
 
@@ -21,8 +20,13 @@ class DefaultOrError[T](Protocol):
         - return a default value if ``raise_error`` is ``False``.
     """
 
-    def handle_key_error(self, key_error: KeyError, default_level: T, emphasis: str | None = None,
-                         choices: list[Any] | None = None) -> T:
+    def handle_key_error(
+        self,
+        key_error: KeyError,
+        default_level: T,
+        emphasis: str | None = None,
+        choices: list[Any] | None = None,
+    ) -> T:
         """
         Subclasses will decide how to treat the supplied ``KeyError``.
 
@@ -67,7 +71,6 @@ class DefaultNoError[T](DefaultOrError[T], Protocol):
 
 
 class RaiseError[T](DefaultOrError[T]):
-
     def __init__(self, raise_error: bool = True):
         """
         Decide to reraise the supplied ``KeyError`` with a better context. Defaults to always reraise the supplied
@@ -90,8 +93,13 @@ class WarningWithDefault[T](DefaultOrError[T], Warner, Protocol):
     """
 
     @override
-    def handle_key_error(self, key_error: KeyError, default_level: T, emphasis: str | None = None,
-                         choices: list[Any] | None = None) -> T:
+    def handle_key_error(
+        self,
+        key_error: KeyError,
+        default_level: T,
+        emphasis: str | None = None,
+        choices: list[Any] | None = None,
+    ) -> T:
         """
         Subclasses will decide how to treat the supplied ``KeyError``.
 
@@ -124,6 +132,7 @@ class StrictWarningWithDefault[T](WarningWithDefault[T], DefaultNoError[T], Prot
     """
     Interface to denote that it is strictly decided that the supplied ``KeyError`` will not be reraised.
     """
+
     @override
     @property
     @abstractmethod
@@ -135,7 +144,6 @@ class StrictWarningWithDefault[T](WarningWithDefault[T], DefaultNoError[T], Prot
 
 
 class SimpleWarningWithDefault[T](WarningWithDefault[T]):
-
     def __init__(self, warn_only: bool = True):
         """
         Simple implementation for ``WarningWithDefault``.
@@ -164,7 +172,6 @@ class SimpleWarningWithDefault[T](WarningWithDefault[T]):
 
 
 class NoErrWarningWithDefault[T](StrictWarningWithDefault[T]):
-
     def __init__(self, warn_only: bool = True):
         """
         Caught ``KeyError`` will not be reraised.

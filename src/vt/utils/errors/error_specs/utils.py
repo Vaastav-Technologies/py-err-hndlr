@@ -16,71 +16,75 @@ from vt.utils.errors.error_specs.exceptions import VTExitingException
 # region require_type() and its overloads
 @overload
 def require_type(
-        val_to_check: bool,
-        var_name: str,
-        val_type: type[bool],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        lenient: bool = False,
-        type_name_mapping: dict[type, str] | None = None
+    val_to_check: bool,
+    var_name: str,
+    val_type: type[bool],
+    exception_to_raise: type[VTExitingException] = VTExitingException,
+    exit_code: int = ERR_DATA_FORMAT_ERR,
+    *,
+    prefix: str = "",
+    suffix: str = "",
+    lenient: bool = False,
+    type_name_mapping: dict[type, str] | None = None,
 ) -> TypeGuard[bool]: ...
 
+
 @overload
 def require_type(
-        val_to_check: int,
-        var_name: str,
-        val_type: type[int],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        lenient: bool = False,
-        type_name_mapping: dict[type, str] | None = None
+    val_to_check: int,
+    var_name: str,
+    val_type: type[int],
+    exception_to_raise: type[VTExitingException] = VTExitingException,
+    exit_code: int = ERR_DATA_FORMAT_ERR,
+    *,
+    prefix: str = "",
+    suffix: str = "",
+    lenient: bool = False,
+    type_name_mapping: dict[type, str] | None = None,
 ) -> TypeGuard[int]: ...
 
+
 @overload
 def require_type(
-        val_to_check: float,
-        var_name: str,
-        val_type: type[float],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        lenient: bool = False,
-        type_name_mapping: dict[type, str] | None = None
+    val_to_check: float,
+    var_name: str,
+    val_type: type[float],
+    exception_to_raise: type[VTExitingException] = VTExitingException,
+    exit_code: int = ERR_DATA_FORMAT_ERR,
+    *,
+    prefix: str = "",
+    suffix: str = "",
+    lenient: bool = False,
+    type_name_mapping: dict[type, str] | None = None,
 ) -> TypeGuard[float]: ...
 
+
 @overload
 def require_type(
-        val_to_check: str,
-        var_name: str,
-        val_type: type[str],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        lenient: bool = False,
-        type_name_mapping: dict[type, str] | None = None
+    val_to_check: str,
+    var_name: str,
+    val_type: type[str],
+    exception_to_raise: type[VTExitingException] = VTExitingException,
+    exit_code: int = ERR_DATA_FORMAT_ERR,
+    *,
+    prefix: str = "",
+    suffix: str = "",
+    lenient: bool = False,
+    type_name_mapping: dict[type, str] | None = None,
 ) -> TypeGuard[str]: ...
 
+
 def require_type[T](
-        val_to_check: T,
-        var_name: str,
-        val_type: type[T],
-        exception_to_raise: type[VTExitingException] = VTExitingException,
-        exit_code: int = ERR_DATA_FORMAT_ERR,
-        *,
-        prefix: str = '',
-        suffix: str = '',
-        lenient: bool = False,
-        type_name_mapping: dict[type, str] | None = None
+    val_to_check: T,
+    var_name: str,
+    val_type: type[T],
+    exception_to_raise: type[VTExitingException] = VTExitingException,
+    exit_code: int = ERR_DATA_FORMAT_ERR,
+    *,
+    prefix: str = "",
+    suffix: str = "",
+    lenient: bool = False,
+    type_name_mapping: dict[type, str] | None = None,
 ) -> TypeGuard[T]:
     """
     Validates that the provided value matches the specified type. If it does not,
@@ -142,12 +146,18 @@ def require_type[T](
     error_specs.utils.MyTypedException: TypeError: 'is_ready' must be a boolean
     """
     actual_type = type(val_to_check)
-    if (not lenient and actual_type is not val_type) or (lenient and not isinstance(val_to_check, val_type)):
+    if (not lenient and actual_type is not val_type) or (
+        lenient and not isinstance(val_to_check, val_type)
+    ):
         type_name_mapping = type_name_mapping or type_name_map
-        typename = type_name_mapping.get(val_type, f"an instance of {getattr(val_type, '__name__', str(val_type))}")
+        typename = type_name_mapping.get(
+            val_type, f"an instance of {getattr(val_type, '__name__', str(val_type))}"
+        )
         errmsg = f"{prefix}'{var_name}' must be {typename}{suffix}"
         raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
     return True
+
+
 # endregion
 
 
@@ -166,6 +176,7 @@ def require_iterable[T](
     empty: bool | None = ...,
 ) -> TypeGuard[list[T]]: ...
 
+
 @overload
 def require_iterable[T](
     val_to_check: tuple[T, ...],
@@ -179,6 +190,7 @@ def require_iterable[T](
     suffix: str = ...,
     empty: bool | None = ...,
 ) -> TypeGuard[tuple[T, ...]]: ...
+
 
 @overload
 def require_iterable[T](
@@ -194,6 +206,7 @@ def require_iterable[T](
     empty: bool | None = ...,
 ) -> TypeGuard[set[T]]: ...
 
+
 @overload
 def require_iterable[T](
     val_to_check: deque[T],
@@ -207,6 +220,7 @@ def require_iterable[T](
     suffix: str = ...,
     empty: bool | None = ...,
 ) -> TypeGuard[deque[T]]: ...
+
 
 @overload
 def require_iterable(
@@ -222,16 +236,22 @@ def require_iterable(
     empty: bool | None = ...,
 ) -> TypeGuard[range]: ...
 
+
 def require_iterable[T](
     val_to_check: Iterable[T],
     var_name: str,
     item_type: type[T] | None = None,
-    enforce: type[list] | type[set] | type[tuple] | type[deque] | type[range] | None = None,
+    enforce: type[list]
+    | type[set]
+    | type[tuple]
+    | type[deque]
+    | type[range]
+    | None = None,
     exception_to_raise: type[VTExitingException] = VTExitingException,
     exit_code: int = ERR_DATA_FORMAT_ERR,
     *,
-    prefix: str = '',
-    suffix: str = '',
+    prefix: str = "",
+    suffix: str = "",
     empty: bool | None = None,
 ) -> TypeGuard[Iterable[T]]:
     """
@@ -302,9 +322,9 @@ def require_iterable[T](
         errmsg = f"{prefix}'{var_name}' must be a non-str iterable{suffix}"
         raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
 
-    iterable_type_str = 'iterable'
+    iterable_type_str = "iterable"
     if enforce is not None:
-        iterable_type_str = getattr(enforce, '__name__', str(enforce))
+        iterable_type_str = getattr(enforce, "__name__", str(enforce))
         if not isinstance(val_to_check, enforce):
             errmsg = f"{prefix}'{var_name}' must be of type {enforce.__name__}{suffix}"
             raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
@@ -320,6 +340,10 @@ def require_iterable[T](
         for v in val_to_check:
             if not isinstance(v, item_type):
                 errmsg = f"{prefix}'{var_name}' must be a {iterable_type_str} of {item_type.__name__}s{suffix}"
-                raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(errmsg)
+                raise exception_to_raise(errmsg, exit_code=exit_code) from TypeError(
+                    errmsg
+                )
     return True
+
+
 # endregion

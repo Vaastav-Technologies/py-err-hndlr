@@ -4,11 +4,16 @@
 """
 Exceptions and exception hierarchies native to `Vaastav Technologies (OPC) Private Limited` python code.
 """
+
 from abc import abstractmethod
 from subprocess import CalledProcessError
 from typing import Protocol, override, overload
 from vt.utils.commons.commons.core_py import fallback_on_none_strict
-from vt.utils.errors.error_specs import ERR_GENERIC_ERR, ERR_CMD_NOT_FOUND, ErrorMsgFormer
+from vt.utils.errors.error_specs import (
+    ERR_GENERIC_ERR,
+    ERR_CMD_NOT_FOUND,
+    ErrorMsgFormer,
+)
 
 errmsg = ErrorMsgFormer
 
@@ -145,7 +150,7 @@ class VTException(Exception):
             return super().__str__()
         if self.args and self.cause:
             return f"{self.cause.__class__.__name__}: {super().__str__()}"
-        return ''
+        return ""
 
     def to_dict(self) -> dict[str, str | None]:
         """
@@ -155,7 +160,7 @@ class VTException(Exception):
             "type": self.__class__.__name__,
             "message": str(self),
             "cause_type": type(self.cause).__name__ if self.cause else None,
-            "cause_message": str(self.cause) if self.cause else None
+            "cause_message": str(self.cause) if self.cause else None,
         }
 
 
@@ -263,7 +268,13 @@ class VTCmdException(VTExitingException):
     command error in question.
     """
 
-    def __init__(self, *args, called_process_error: CalledProcessError, exit_code: int | None = None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        called_process_error: CalledProcessError,
+        exit_code: int | None = None,
+        **kwargs,
+    ):
         """
         Examples:
 
@@ -358,8 +369,13 @@ class VTCmdException(VTExitingException):
             ``None`` supplied or exit code not provided by the user.
         :param kwargs: extra keyword-args for more info storage.
         """
-        super().__init__(*args,
-                         exit_code=fallback_on_none_strict(exit_code, called_process_error.returncode), **kwargs)
+        super().__init__(
+            *args,
+            exit_code=fallback_on_none_strict(
+                exit_code, called_process_error.returncode
+            ),
+            **kwargs,
+        )
         self.called_process_error = called_process_error
 
     @override
@@ -417,7 +433,9 @@ class VTCmdException(VTExitingException):
         """
         if self.__cause__ is not None:
             if not isinstance(self.__cause__, CalledProcessError):
-                raise TypeError(f"Expected cause to be CalledProcessError, got {type(self.__cause__)}.")
+                raise TypeError(
+                    f"Expected cause to be CalledProcessError, got {type(self.__cause__)}."
+                )
             return self.__cause__
         return self.called_process_error
 
@@ -428,15 +446,31 @@ class VTCmdNotFoundError(VTExitingException):
     """
 
     @overload
-    def __init__(self, *args, command: str | list[str], exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
-        ...
+    def __init__(
+        self,
+        *args,
+        command: str | list[str],
+        exit_code: int = ERR_CMD_NOT_FOUND,
+        **kwargs,
+    ): ...
 
     @overload
-    def __init__(self, *args, file_not_found_error: FileNotFoundError, exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
-        ...
+    def __init__(
+        self,
+        *args,
+        file_not_found_error: FileNotFoundError,
+        exit_code: int = ERR_CMD_NOT_FOUND,
+        **kwargs,
+    ): ...
 
-    def __init__(self, *args, command: str | list[str] | None = None, file_not_found_error: FileNotFoundError | None = None,
-                 exit_code: int = ERR_CMD_NOT_FOUND, **kwargs):
+    def __init__(
+        self,
+        *args,
+        command: str | list[str] | None = None,
+        file_not_found_error: FileNotFoundError | None = None,
+        exit_code: int = ERR_CMD_NOT_FOUND,
+        **kwargs,
+    ):
         """
         Examples:
 
@@ -589,11 +623,20 @@ class VTCmdNotFoundError(VTExitingException):
         :param kwargs: extra keyword-args for more info storage.
         """
         if not command and not file_not_found_error:
-            raise ValueError(errmsg.at_least_one_required("command", "file_not_found_error"))
+            raise ValueError(
+                errmsg.at_least_one_required("command", "file_not_found_error")
+            )
         if command:
-            args = (*args, f"Command {f"`{command}`" if isinstance(command, str) else command} not found",)
-        if file_not_found_error and not isinstance(file_not_found_error, FileNotFoundError):
-            raise TypeError(f"file_not_found_error must be of type/subtype FileNotFoundError")
+            args = (
+                *args,
+                f"Command {f'`{command}`' if isinstance(command, str) else command} not found",
+            )
+        if file_not_found_error and not isinstance(
+            file_not_found_error, FileNotFoundError
+        ):
+            raise TypeError(
+                "file_not_found_error must be of type/subtype FileNotFoundError"
+            )
         super().__init__(*args, exit_code=exit_code, **kwargs)
         self.command = command
         self.file_not_found_error = file_not_found_error
@@ -653,12 +696,14 @@ class VTCmdNotFoundError(VTExitingException):
         """
         if self.__cause__ is not None:
             if not isinstance(self.__cause__, FileNotFoundError):
-                raise TypeError(f"Expected cause to be FileNotFoundError, got {type(self.__cause__)}.")
+                raise TypeError(
+                    f"Expected cause to be FileNotFoundError, got {type(self.__cause__)}."
+                )
             return self.__cause__
         return self.file_not_found_error
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Some test code for exception formatting check.
     """
@@ -666,36 +711,36 @@ if __name__ == '__main__':
     import sys
 
     def log_sep(file=sys.stderr):
-        print('='*50, file=file)
-        print('|'*50, file=file)
-        print('='*50, file=file)
+        print("=" * 50, file=file)
+        print("|" * 50, file=file)
+        print("=" * 50, file=file)
 
     log = logging.getLogger()
     try:
-        raise VTException from ValueError('a message.')
+        raise VTException from ValueError("a message.")
     except VTException as e:
-        log.exception('exception')
-        print('-'*50, file=sys.stderr)
+        log.exception("exception")
+        print("-" * 50, file=sys.stderr)
         log.error(e)
     log_sep()
 
     try:
-        raise VTException('a message.') from ValueError
+        raise VTException("a message.") from ValueError
     except VTException as e:
-        log.exception('exception')
-        print('-'*50, file=sys.stderr)
+        log.exception("exception")
+        print("-" * 50, file=sys.stderr)
         log.error(e)
     log_sep()
 
     try:
         try:
-            raise VTException('a message.') from ValueError('unexpected.')
+            raise VTException("a message.") from ValueError("unexpected.")
         except VTException as e:
-            log.exception('exception')
-            print('-'*50, file=sys.stderr)
+            log.exception("exception")
+            print("-" * 50, file=sys.stderr)
             log.error(e)
-            raise VTException('Yo man') from e
+            raise VTException("Yo man") from e
     except VTException as e:
-        log.exception('reraised.')
-        print('-'*50, file=sys.stderr)
+        log.exception("reraised.")
+        print("-" * 50, file=sys.stderr)
         log.error(e)

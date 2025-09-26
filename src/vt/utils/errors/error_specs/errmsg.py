@@ -28,9 +28,7 @@ class ErrorMessageFormer:
     """
 
     def __init__(
-            self,
-            use_oxford_comma: bool = False,
-            conjunctions: dict[str, str] | None = None
+        self, use_oxford_comma: bool = False, conjunctions: dict[str, str] | None = None
     ):
         """
         :param use_oxford_comma: Whether to use an Oxford comma before the final conjunction.
@@ -39,7 +37,9 @@ class ErrorMessageFormer:
         self.use_oxford_comma = use_oxford_comma
         self.conjunctions = conjunctions or {"and": "and", "or": "or"}
 
-    def _join_args(self, items: list[str], conj_type: Literal["and", "or"], surround_item: str = "") -> str:
+    def _join_args(
+        self, items: list[str], conj_type: Literal["and", "or"], surround_item: str = ""
+    ) -> str:
         """
         Helper to join a list of arguments using the correct conjunction and comma rules.
 
@@ -59,9 +59,16 @@ class ErrorMessageFormer:
         else:
             return items[0]
 
-    def not_allowed_together(self, first_arg: str, second_arg: str, *args: str,
-                             prefix: str = "", suffix: str = "",
-                             _prefix: str = "", _suffix: str = " are not allowed together") -> str:
+    def not_allowed_together(
+        self,
+        first_arg: str,
+        second_arg: str,
+        *args: str,
+        prefix: str = "",
+        suffix: str = "",
+        _prefix: str = "",
+        _suffix: str = " are not allowed together",
+    ) -> str:
         """
         Builds and returns an error message for arguments that are not to be supplied together.
 
@@ -108,9 +115,16 @@ class ErrorMessageFormer:
         all_args = [first_arg, second_arg, *args]
         return f"{prefix}{_prefix}{self._join_args(all_args, 'and')}{_suffix}{suffix}"
 
-    def at_least_one_required(self, first_arg: str, second_arg: str, *args: str,
-                              prefix: str = "", suffix: str = "",
-                              _prefix: str = "", _suffix: str = " is required") -> str:
+    def at_least_one_required(
+        self,
+        first_arg: str,
+        second_arg: str,
+        *args: str,
+        prefix: str = "",
+        suffix: str = "",
+        _prefix: str = "",
+        _suffix: str = " is required",
+    ) -> str:
         """
         Builds and returns an error message indicating that at least one of the arguments is required.
 
@@ -175,9 +189,16 @@ class ErrorMessageFormer:
         joined = self._join_args(all_args, "or")
         return f"{prefix}{_prefix}Either {joined}{_suffix}{suffix}"
 
-    def all_required(self, first_arg: str, second_arg: str, *args: str,
-                     prefix: str = "", suffix: str = "",
-                     _prefix: str = "", _suffix: str = " are required") -> str:
+    def all_required(
+        self,
+        first_arg: str,
+        second_arg: str,
+        *args: str,
+        prefix: str = "",
+        suffix: str = "",
+        _prefix: str = "",
+        _suffix: str = " are required",
+    ) -> str:
         """
         Builds and returns an error message stating that all arguments must be supplied.
 
@@ -261,10 +282,16 @@ class ErrorMessageFormer:
         keyword = "Both" if len(all_args) == 2 else "All"
         return f"{prefix}{_prefix}{keyword} {self._join_args(all_args, 'and')}{_suffix}{suffix}"
 
-    def errmsg_for_choices(self, value: str = "value", emphasis: str | None = None,
-                           choices: list[Any] | None = None,
-                           prefix: str = "", suffix: str = "",
-                           _prefix: str = "Unexpected ", _suffix: str = ".") -> str:
+    def errmsg_for_choices(
+        self,
+        value: str = "value",
+        emphasis: str | None = None,
+        choices: list[Any] | None = None,
+        prefix: str = "",
+        suffix: str = "",
+        _prefix: str = "Unexpected ",
+        _suffix: str = ".",
+    ) -> str:
         """
         Builds and returns an error message providing more context when a value is unexpectedly given.
 
@@ -328,13 +355,15 @@ class ErrorMessageFormer:
         """
         msg = f"{prefix}{_prefix}{emphasis + ' ' if emphasis else ''}{value}"
         if choices:
-            msg += f". Choose from {self._join_args(choices, 'and', surround_item='\'')}"
+            msg += f". Choose from {self._join_args(choices, 'and', surround_item="'")}"
         msg += f"{_suffix}{suffix}"
         return msg
 
-    def clone_with(self,
-                   use_oxford_comma: bool | None = None,
-                   conjunctions: dict[str, str] | None = None) -> "ErrorMessageFormer":
+    def clone_with(
+        self,
+        use_oxford_comma: bool | None = None,
+        conjunctions: dict[str, str] | None = None,
+    ) -> "ErrorMessageFormer":
         """
         Returns a new instance of ErrorMessageFormer with the given overrides.
 
@@ -359,14 +388,18 @@ class ErrorMessageFormer:
             'a, b, --and-- c are not allowed together'
         """
         return ErrorMessageFormer(
-            use_oxford_comma=use_oxford_comma if use_oxford_comma is not None else self.use_oxford_comma,
-            conjunctions=conjunctions or self.conjunctions.copy()
+            use_oxford_comma=use_oxford_comma
+            if use_oxford_comma is not None
+            else self.use_oxford_comma,
+            conjunctions=conjunctions or self.conjunctions.copy(),
         )
 
     def __repr__(self) -> str:
-        return (f"<{self.__class__.__name__}("
-                f"use_oxford_comma={self.use_oxford_comma}, "
-                f"conjunctions={self.conjunctions})>")
+        return (
+            f"<{self.__class__.__name__}("
+            f"use_oxford_comma={self.use_oxford_comma}, "
+            f"conjunctions={self.conjunctions})>"
+        )
 
 
 ErrorMsgFormer = ErrorMessageFormer()
