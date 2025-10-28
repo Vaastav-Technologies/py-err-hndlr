@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "vt-err-hndlr"
-version = "0.0.0dev3"
+version = "0.0.0dev4"
 description = "Common errors and warnings for Vaastav Technologies (vt) projects."
 readme = "README.md"
 keywords = ["error", "error-handling", "error-handler", "warning", "warn"]
@@ -37,7 +37,7 @@ classifiers = [
 license = "Apache-2.0"
 
 dependencies = [
-  "vt-commons >= 0.0.1dev4"
+  "vt-commons >= 0.0.1dev9"
 ]
 
 [dependency-groups]
