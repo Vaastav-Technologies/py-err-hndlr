@@ -128,7 +128,26 @@ class StrNotIn:
 
         :param non_supported_vals: these values will not be supported.
         :param str_func: function to perform processing on supplied str val and return the processed str. An example
-            would be ``str.strip`` callable.
+            would be ``str.strip`` callable. This function is applied on the param string to obtain a processed string.
+            Validation is then performed on this processed string.
+
+        >>> StrNotIn()("ok")
+        'ok'
+
+        >>> StrNotIn("")("")
+        Traceback (most recent call last):
+        argparse.ArgumentTypeError: value must not be ''. ('',) values are not supported.
+
+        - Works fine because "   " is not ""
+
+          >>> StrNotIn("")("   ")
+          '   '
+
+        - Errs because "   " is ``str.strip``ed and then "   " equals "" after stripping
+
+          >>> StrNotIn("", str_func=str.strip)("   ")
+          Traceback (most recent call last):
+          argparse.ArgumentTypeError: value must not be '   '. ('',) values are not supported.
         """
         self.non_supported_vals = non_supported_vals
         self.str_func = str_func
