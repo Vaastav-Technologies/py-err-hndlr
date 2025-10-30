@@ -7,8 +7,8 @@ Helpers related to argparse.
 
 import pathlib
 from collections.abc import Callable
-from typing import override, Sequence, Any
-from argparse import ArgumentTypeError, FileType, ArgumentParser, Namespace, Action
+from typing import override
+from argparse import ArgumentTypeError, FileType
 
 import vt.utils.errors.helpers.path_helpers
 
@@ -125,9 +125,7 @@ class KeyFilePath(FilePath):
 
 
 class StrNotIn:
-    def __init__(
-        self, *non_supported_vals, str_func: Callable[[str], str] = lambda x: x
-    ):
+    def __init__(self, *non_supported_vals, str_func: Callable[[str], str] = str):
         """
         The supplied string must not contain non-supported-values.
 
