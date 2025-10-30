@@ -26,4 +26,4 @@ jobs:
       - name: 🧠 Run Mypy (Static Type Check)
         run: |
           python -m pip install .
-          mypy -p vt.utils.errors.warnings -p vt.utils.errors.error_specs --namespace-packages
+          mypy -p vt.utils.errors.warnings -p vt.utils.errors.error_specs -p vt.utils.errors.helpers --namespace-packages
