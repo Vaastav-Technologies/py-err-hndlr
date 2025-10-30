@@ -13,9 +13,6 @@ from argparse import ArgumentTypeError, FileType
 import vt.utils.errors.helpers.path_helpers
 
 
-MULTIPLE_OCCURRENCE_ERR_MSG = "must not appear more than once"
-
-
 class Directory(vt.utils.errors.helpers.path_helpers.Directory):
     @override
     def validate_conditions(self, dir_path: str):
