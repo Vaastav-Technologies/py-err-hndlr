@@ -145,21 +145,3 @@ class StrNotIn:
                 f"{self.non_supported_vals} values are not supported."
             )
         return val
-
-
-class Once(Action):
-    """
-    explicitly allow only one occurrence of the option.
-    """
-
-    @override
-    def __call__(
-        self,
-        parser: ArgumentParser,
-        namespace: Namespace,
-        values: str | Sequence[Any] | None,
-        option_string: str | None = None,
-    ):
-        if getattr(namespace, self.dest, self.default) is not self.default:
-            parser.error(option_string + " " + MULTIPLE_OCCURRENCE_ERR_MSG)
-        setattr(namespace, self.dest, values)
