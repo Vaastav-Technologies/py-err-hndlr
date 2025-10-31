@@ -121,6 +121,8 @@ class KeyFilePath(FilePath):
             )
 
 
+# TODO: provide an argparse helper to disallow an option, for example, fully disallow --mirror on git push.
+
 class StrNotIn:
     def __init__(self, *non_supported_vals, str_func: Callable[[str], str] = str):
         """
