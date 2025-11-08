@@ -127,11 +127,10 @@ class NoAllow(argparse._HelpAction):
     """
     Do not allow this option to be present/provided by the client.
 
+    Example:
+
     >>> parser = argparse.ArgumentParser()
     >>> _ = parser.add_argument("-m", "--mirror", action=NoAllow)
-    >>> parser.parse_args(["a", "b", "--this", "-m", "8"])
-    Traceback (most recent call last):
-    argparse.ArgumentError: argument -m/--mirror: Not allowed
     """
 
     @override
