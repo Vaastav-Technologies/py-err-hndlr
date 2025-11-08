@@ -4,6 +4,7 @@
 """
 Helpers related to argparse.
 """
+
 import argparse
 import pathlib
 from collections.abc import Callable
@@ -139,7 +140,8 @@ class NoAllow(argparse._HelpAction):
 
     @override
     def format_usage(self) -> str:
-        return '>'+'|'.join(self.option_strings)+'<'
+        return ">" + "|".join(self.option_strings) + "<"
+
 
 class StrNotIn:
     def __init__(self, *non_supported_vals, str_func: Callable[[str], str] = str):

@@ -5,6 +5,7 @@
 """
 Tests related to argparse helpers.
 """
+
 import argparse
 
 import pytest
@@ -21,13 +22,18 @@ def no_allow_mirror_parser() -> argparse.ArgumentParser:
     return parser
 
 
-@pytest.mark.parametrize("args", [["--mirror"],
-                                  ["a", "b", "8", "-m", "--oops"],
-                                  ["a", "b", "8", "-m", "90"],
-                                  ["a", "b", "8", "--mirror", "90"],
-                                  ["a", "-m", "8", "--mirror", "90"],
-                                  ["a", "-m", "8", "--mirror"],
-                                  ["a", "--mirror", "8", "--yo", "10"]])
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["--mirror"],
+        ["a", "b", "8", "-m", "--oops"],
+        ["a", "b", "8", "-m", "90"],
+        ["a", "b", "8", "--mirror", "90"],
+        ["a", "-m", "8", "--mirror", "90"],
+        ["a", "-m", "8", "--mirror"],
+        ["a", "--mirror", "8", "--yo", "10"],
+    ],
+)
 def test_no_allow(args: list[str], no_allow_mirror_parser, capsys):
     with pytest.raises(SystemExit):
         no_allow_mirror_parser.parse_known_args(args)
