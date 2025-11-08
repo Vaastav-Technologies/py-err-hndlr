@@ -4,7 +4,7 @@
 """
 Helpers related to argparse.
 """
-
+import argparse
 import pathlib
 from collections.abc import Callable
 from typing import override
@@ -122,6 +122,24 @@ class KeyFilePath(FilePath):
 
 
 # TODO: provide an argparse helper to disallow an option, for example, fully disallow --mirror on git push.
+class NoAllow(argparse._HelpAction):
+    """
+    Do not allow this option to be present/provided by the client.
+
+    >>> parser = argparse.ArgumentParser()
+    >>> _ = parser.add_argument("-m", "--mirror", action=NoAllow)
+    >>> parser.parse_args(["a", "b", "--this", "-m", "8"])
+    Traceback (most recent call last):
+    argparse.ArgumentError: argument -m/--mirror: Not allowed
+    """
+
+    @override
+    def __call__(self, parser, namespace, values, option_string=None):
+        raise argparse.ArgumentError(self, "Not allowed")
+
+    @override
+    def format_usage(self) -> str:
+        return '>'+'|'.join(self.option_strings)+'<'
 
 class StrNotIn:
     def __init__(self, *non_supported_vals, str_func: Callable[[str], str] = str):
