@@ -4,19 +4,29 @@
 """
 Error handlers.
 """
+
 import logging
 from typing import Literal, overload
 
 # region re-exports interfaces
 from vt.utils.errors.error_specs import ErrorMsgFormer
 from vt.utils.errors.handlers.base import ErrorHandler as ErrorHandler
-from vt.utils.errors.handlers.base import RegisteringErrorHandler as RegisteringErrorHandler
+from vt.utils.errors.handlers.base import (
+    RegisteringErrorHandler as RegisteringErrorHandler,
+)
 from vt.utils.errors.handlers.base import Pausable as Pausable
 from vt.utils.errors.handlers.base import Bombing as Bombing
+
 # region import implementations
-from vt.utils.errors.handlers.register import WarnStdLoggerErrHandlr as _WarnStdLoggerErrHandlr
-from vt.utils.errors.handlers.register import ErrorStdLoggerErrHandlr as _ErrorStdLoggerErrHandlr
-from vt.utils.errors.handlers.register import FatalStdLoggerErrHandlr as _FatalStdLoggerErrHandlr
+from vt.utils.errors.handlers.register import (
+    WarnStdLoggerErrHandlr as _WarnStdLoggerErrHandlr,
+)
+from vt.utils.errors.handlers.register import (
+    ErrorStdLoggerErrHandlr as _ErrorStdLoggerErrHandlr,
+)
+from vt.utils.errors.handlers.register import (
+    FatalStdLoggerErrHandlr as _FatalStdLoggerErrHandlr,
+)
 from vt.utils.errors.handlers.base import StdinPausing as _StdinPausing
 from vt.utils.errors.handlers.base import SysExitBomb as _SysExitBomb
 from vt.utils.errors.handlers.base import NoOpErrorHandler as _NoOpErrorHandler
@@ -27,17 +37,20 @@ from vt.utils.errors.handlers.base import NoOpErrorHandler as _NoOpErrorHandler
 @overload
 def get_error_handler(err_handlr_type: Literal["pass"]) -> _NoOpErrorHandler: ...
 
+
 @overload
 def get_error_handler(
     err_handlr_type: Literal["log"],
     logger: logging.Logger,
 ) -> _WarnStdLoggerErrHandlr: ...
 
+
 @overload
 def get_error_handler(
     err_handlr_type: Literal["pause"],
     logger: logging.Logger,
 ) -> _ErrorStdLoggerErrHandlr: ...
+
 
 @overload
 def get_error_handler(
@@ -122,8 +135,7 @@ def get_error_handler(
     """
 
     errmsg = ErrorMsgFormer.errmsg_for_choices(
-        emphasis="err_handlr_type",
-        choices=["log", "pause", "bomb", "pass"]
+        emphasis="err_handlr_type", choices=["log", "pause", "bomb", "pass"]
     )
 
     if err_handlr_type == "pass":
@@ -136,7 +148,9 @@ def get_error_handler(
         if err_handlr_type == "log":
             return _WarnStdLoggerErrHandlr(logger)
         elif err_handlr_type == "pause":
-            return _ErrorStdLoggerErrHandlr(logger, _StdinPausing("Press Enter to continue..."))
+            return _ErrorStdLoggerErrHandlr(
+                logger, _StdinPausing("Press Enter to continue...")
+            )
         else:
             # "bomb" branch
             return _FatalStdLoggerErrHandlr(logger, bombing=_SysExitBomb())

@@ -4,6 +4,7 @@
 """
 Base classes and interfaces for error handling.
 """
+
 import sys
 from abc import abstractmethod
 from typing import Protocol, override, overload
@@ -30,6 +31,7 @@ class RegisteringErrorHandler(ErrorHandler, Protocol):
     """
     Error handlers that register errors.
     """
+
     pass
 
 
@@ -44,7 +46,7 @@ class NoOpErrorHandler(ErrorHandler):
 
         :param errmsg: error message.
         """
-        pass    # pragma: no cover
+        pass  # pragma: no cover
 
 
 class Pausable(Protocol):
@@ -61,7 +63,6 @@ class Pausable(Protocol):
 
 
 class StdinPausing(Pausable):
-
     def __init__(self, stdin_str: str = ""):
         """
         Pausing done by waiting on input on stdin.
@@ -75,7 +76,7 @@ class StdinPausing(Pausable):
         """
         Wait for stdin input to pause.
         """
-        input(self.stdin_str)   # pragma: no cover
+        input(self.stdin_str)  # pragma: no cover
 
 
 class Bombing(Protocol):
@@ -94,14 +95,11 @@ class Bombing(Protocol):
 
 
 class SysExitBomb(Bombing):
+    @overload
+    def __init__(self, *, exit_code: int = ERR_GENERIC_ERR): ...
 
     @overload
-    def __init__(self, *, exit_code: int = ERR_GENERIC_ERR):
-        ...
-
-    @overload
-    def __init__(self, *, errmsg: str):
-        ...
+    def __init__(self, *, errmsg: str): ...
 
     def __init__(self, *, exit_code: int = ERR_GENERIC_ERR, errmsg: str | None = None):
         """

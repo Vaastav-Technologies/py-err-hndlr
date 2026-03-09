@@ -4,6 +4,7 @@
 """
 Error handlers that register errors.
 """
+
 import logging
 from abc import abstractmethod, ABC
 from typing import Protocol
@@ -28,9 +29,12 @@ class StdLoggerErrHandlr(RegisteringErrorHandler, Protocol):
 
 
 class AbsStdLoggerErrHandlr(StdLoggerErrHandlr, ABC):
-
-    def __init__(self, logger: logging.Logger, pausable: Pausable | None = None,
-                 bombing: Bombing | None = None):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        pausable: Pausable | None = None,
+        bombing: Bombing | None = None,
+    ):
         """
         Perform error registration by logging into a standard logger.
 
@@ -45,7 +49,7 @@ class AbsStdLoggerErrHandlr(StdLoggerErrHandlr, ABC):
     @override
     @property
     def logger(self) -> logging.Logger:
-        return self._logger # pragma: no cover
+        return self._logger  # pragma: no cover
 
     @override
     def process_error_msg(self, errmsg: str) -> None:
@@ -72,7 +76,7 @@ class WarnStdLoggerErrHandlr(AbsStdLoggerErrHandlr):
 
     @override
     def subclass_process_err_msg(self, errmsg: str) -> None:
-        self.logger.warning(errmsg, stacklevel=2)   # pragma: no cover
+        self.logger.warning(errmsg, stacklevel=2)  # pragma: no cover
 
 
 class ErrorStdLoggerErrHandlr(AbsStdLoggerErrHandlr):
@@ -82,7 +86,7 @@ class ErrorStdLoggerErrHandlr(AbsStdLoggerErrHandlr):
 
     @override
     def subclass_process_err_msg(self, errmsg: str) -> None:
-        self.logger.error(errmsg, stacklevel=2) # pragma: no cover
+        self.logger.error(errmsg, stacklevel=2)  # pragma: no cover
 
 
 class FatalStdLoggerErrHandlr(AbsStdLoggerErrHandlr):
@@ -92,4 +96,4 @@ class FatalStdLoggerErrHandlr(AbsStdLoggerErrHandlr):
 
     @override
     def subclass_process_err_msg(self, errmsg: str) -> None:
-        self.logger.fatal(errmsg, stacklevel=2) # pragma: no cover
+        self.logger.fatal(errmsg, stacklevel=2)  # pragma: no cover
