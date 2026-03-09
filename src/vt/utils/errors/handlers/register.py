@@ -7,9 +7,7 @@ Error handlers that register errors.
 
 import logging
 from abc import abstractmethod, ABC
-from typing import Protocol
-
-from typing_extensions import override
+from typing import Protocol, override
 
 from vt.utils.errors.handlers.base import RegisteringErrorHandler, Pausable, Bombing
 
