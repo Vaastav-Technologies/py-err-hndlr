@@ -174,6 +174,7 @@ def require_dir(
     return dir_to_check
 
 
+# TODO: better to have this as a contextmanager
 def get_opened_file(
     file: Path,
     emphasis_str: str,
