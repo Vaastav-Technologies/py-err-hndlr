@@ -9,7 +9,7 @@ Python warnings related helpers.
 import warnings
 from abc import abstractmethod
 from contextlib import contextmanager
-from typing import Type, Protocol
+from typing import Protocol
 
 
 @contextmanager
@@ -32,7 +32,7 @@ def suppress_warning_stacktrace(fmt: str = "{category}: {message}\n"):
 
     def no_stack_trace(
         message: Warning | str,
-        category: Type[Warning],
+        category: type[Warning],
         filename: str,
         lineno: int,
         line: str | None = None,
