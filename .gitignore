@@ -174,3 +174,12 @@ cython_debug/
 .pypirc
 
 .idea
+
+# Ignore AI stuff
+.mcp.json
+
+# Local planning file with AI
+plan.md
+
+# Release message former
+release-msg.md
