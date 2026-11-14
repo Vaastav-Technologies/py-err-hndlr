@@ -26,4 +26,4 @@ jobs:
       - name: 🧠 Run Type Check
         run: |
           python -m pip install .
-          mypy -p vt.utils.errors.warnings -p vt.utils.errors.error_specs -p vt.utils.errors.helpers --namespace-packages
+          mypy -p vt.utils.errors.warnings -p vt.utils.errors.error_specs -p vt.utils.errors.helpers -p vt.utils.errors.handlers --namespace-packages
