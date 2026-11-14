@@ -37,7 +37,7 @@ classifiers = [
 license = "Apache-2.0"
 
 dependencies = [
-  "vt-commons >= 0.0.1dev9"
+  "vt-commons >= 0.0.2.dev0"
 ]
 
 [dependency-groups]
