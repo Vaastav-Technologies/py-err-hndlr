@@ -78,7 +78,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/py-commons
+      url: https://pypi.org/project/vt-err-hndlr/
 
     steps:
       - name: 📥 Retrieve release distributions
