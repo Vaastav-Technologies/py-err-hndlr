@@ -52,7 +52,8 @@ doc = ["sphinx", "sphinx-argparse"]
 [project.urls]
 homepage = "https://github.com/Vaastav-Technologies/py-err-hndlr"
 source = "https://github.com/Vaastav-Technologies/py-err-hndlr"
-issues = "https://github.com/Vaastav-Technologies/py-eerr-hndlr/issues"
+issues = "https://github.com/Vaastav-Technologies/py-err-hndlr/issues"
+changelog = "https://github.com/Vaastav-Technologies/py-err-hndlr/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src/"]
