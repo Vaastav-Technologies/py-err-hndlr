@@ -41,7 +41,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-lint = ["ruff"]
+lint = ["ruff==0.11.10"]
 typecheck = ["mypy"]
 dev = [{include-group = "lint"}, {include-group = "typecheck"}]
 test = ["pytest"]
