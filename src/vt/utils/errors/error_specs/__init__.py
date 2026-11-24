@@ -55,6 +55,9 @@ from vt.utils.errors.error_specs.__constants__ import (
     ERR_SIGINT_RECEIVED as ERR_SIGINT_RECEIVED,
 )
 from vt.utils.errors.error_specs.__constants__ import type_name_map as type_name_map
+from vt.utils.errors.error_specs.__constants__ import (
+    type_truthy_map as type_truthy_map,
+)
 # endregion
 
 

@@ -66,3 +66,9 @@ type_name_map: dict[type, str] = {
     bool: "a boolean",
     __pathlib.Path: "a Path",
 }
+
+type_truthy_map: dict[type, str] = {
+    str: "a non-empty string",
+    int: "a non-zero int",
+    float: "a non-zero float",
+}
