@@ -136,28 +136,19 @@ def require_type[T](
     raises a configurable exception.
 
     :param val_to_check: The value to validate.
-    :type val_to_check: T
     :param var_name: Name of the variable being validated. Used in error messages.
-    :type var_name: str
     :param val_type: The expected type the value must conform to.
-    :type val_type: type[T]
     :param exception_to_raise: Exception type to raise. Must derive from ``VTExitingException``.
-    :type exception_to_raise: type[VTExitingException]
     :param exit_code: Exit code to assign to the raised exception.
-    :type exit_code: int
     :param prefix: Optional prefix for error messages.
-    :type prefix: str
     :param suffix: Optional suffix for error messages.
-    :type suffix: str
     :param lenient: If True, uses `isinstance()` for validation (subclasses allowed, e.g. ``bool`` is an ``int`` if
         this options is ``True``). If False, uses strict `type(...) is ...`, i.e., ``bool`` is no longer considered an
         ``int``.
-    :type lenient: bool
     :param truthy: If True (the default), reject falsy values after the type check:
         ``""``, ``0``, and ``0.0``. Ignored when ``val_type`` is ``bool`` (``False`` is a
         valid boolean). Pass ``truthy=False`` when ``0`` is a valid value. Use
         ``require_iterable`` for lists, sets, tuples, and deques.
-    :type truthy: bool
     :param type_name_mapping: name mapping between types, like str -> string.
     :param type_truthy_mapping: phrases used when ``truthy`` rejects a value, like
         str -> ``a non-empty string``, int -> ``a non-zero int``.
@@ -195,7 +186,7 @@ def require_type[T](
     >>> class MyTypedException(VTExitingException): pass
 
     >>> try:
-    ...     require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99)
+    ...     require_type(None, "is_ready", bool, exception_to_raise=MyTypedException, exit_code=99)  # type: ignore[arg-type] expected bool, provided None
     ... except MyTypedException as e:
     ...     print(f"{type(e).__name__}: {e}")
     MyTypedException: TypeError: 'is_ready' must be a boolean
@@ -325,27 +316,18 @@ def optional_type[T](
     ``""``, ``0``, and ``0.0`` are rejected. ``False`` is still accepted for ``bool``.
 
     :param val_to_check: The value to validate, or ``None`` to skip the check.
-    :type val_to_check: T | None
     :param var_name: Name of the variable being validated. Used in error messages.
-    :type var_name: str
     :param val_type: The expected type the value must conform to when it is not ``None``.
-    :type val_type: type[T]
     :param exception_to_raise: Exception type to raise. Must derive from ``VTExitingException``.
-    :type exception_to_raise: type[VTExitingException]
     :param exit_code: Exit code to assign to the raised exception.
-    :type exit_code: int
     :param prefix: Optional prefix for error messages.
-    :type prefix: str
     :param suffix: Optional suffix for error messages.
-    :type suffix: str
     :param lenient: If True, uses `isinstance()` for validation (subclasses allowed, e.g. ``bool`` is an ``int`` if
         this options is ``True``). If False, uses strict `type(...) is ...`, i.e., ``bool`` is no longer considered an
         ``int``.
-    :type lenient: bool
     :param truthy: If True (the default), reject falsy non-``None`` values after the type check:
         ``""``, ``0``, and ``0.0``. Ignored when ``val_type`` is ``bool``. Use
         ``optional_iterable`` for lists, sets, tuples, and deques.
-    :type truthy: bool
     :param type_name_mapping: name mapping between types, like str -> string.
     :param type_truthy_mapping: phrases used when ``truthy`` rejects a value, like
         str -> ``a non-empty string``, int -> ``a non-zero int``.
